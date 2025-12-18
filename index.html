@@ -1992,5 +1992,38 @@
         }
     };
 </script>
+
+<script>
+    (function loadExternalBrain() {
+        const filePath = './new_memory.json'; // 你的新词库文件名
+
+        console.log("正在尝试接入外部神经元...");
+
+        fetch(filePath)
+            .then(response => {
+                if (!response.ok) throw new Error("找不到词库文件");
+                return response.json();
+            })
+            .then(newData => {
+                // 1. 强行合并到 brain 实例的数据库中
+                // 注意：brain 是你在上一个 script 里定义的全局变量，这里可以直接用
+                brain.db = brain.db.concat(newData);
+
+                // 2. 刷新状态栏显示
+                const statusDiv = document.getElementById('db-status');
+                if (statusDiv) {
+                    statusDiv.innerText = `已扩容: ${brain.db.length} (外挂+${newData.length})`;
+                    //以此闪烁一下提示成功
+                    statusDiv.style.color = "#2a9d16"; 
+                    setTimeout(() => statusDiv.style.color = "#444", 1000);
+                }
+
+                console.log(`✅ 成功注入 ${newData.length} 条新记忆！`);
+            })
+            .catch(err => {
+                console.warn("⚠️ 外挂词库加载失败 (如果是本地运行，请查看跨域CORS说明):", err);
+            });
+    })();
+</script>
 </body>
 </html>
