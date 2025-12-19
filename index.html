@@ -675,21 +675,21 @@
             // ===========================
             // 优化：使用 [^，,。?？]+ 来只匹配逗号/句号前的内容，防止把“你呢”也匹配进去
             {
-                regex: /我叫([^，,。?？!！]+)/i,
+                regex: /(?:我叫|我是|名字是|称呼我为|叫我)\s*([^，,。?？!！]+)/i,
                 responses: [
-                    "你好 $1，这名字很有个性。",
+                    "你好$1，这名字很有个性。",
                     "很高兴认识你，$1。",
                     "$1... 我把这个名字写入我的内存了。",
                     "$1？真是一个好听的名字，读起来很顺口。",
                     "收到，已将称呼更新为 $1，正在保存设置...",
-                    "原来是 $1 呀，以后请多关照啦！",
+                    "原来是$1呀，以后请多关照啦！",
                     "正在创建用户 $1 的专属档案... 创建成功！",
                     "$1... 这个名字听起来很温暖，我很喜欢。",
-                    "你好 $1，准备好和我一起探索数字世界了吗？",
+                    "你好$1，准备好和我一起探索数字世界了吗？",
                     "已为你添加标签：[好朋友 $1]。",
                     "终于知道怎么称呼你了，$1，我记性很好的，不会忘。",
                     "$1，这就把你的名字写进我的启动项里，每次醒来都记得你。",
-                    "欢迎 $1 登录系统！今天想聊点什么呢？"
+                    "欢迎$1登录系统！今天想聊点什么呢？"
                 ]
             },
             {
@@ -1068,24 +1068,32 @@
             async process(input) {
                 if (!input) return null;
                 input = input.trim();
-                // ★★★ 修复点 1：最先进行预处理 ★★★
-                // 这样后续的所有逻辑（情绪、正则、搜索）都基于统一的标准词
+
+                // 1. 预处理 (用于情绪分析和后续的通用匹配)
                 const processedInput = this.preprocess(input);
-                // ★★★ 修复点 2：情绪分析使用处理后的文本 ★★★
-                // 这样如果你映射了 "二货" -> "笨蛋"，情绪库里只要有 "笨蛋" 就能识别出愤怒
+
+                // 2. 情绪分析 (确保即使在只说名字时也能记录情绪)
                 this.analyzeSentiment(processedInput);
-                // 记忆捕获可以使用原句，保留用户原汁原味的称呼
-                this.extractMemory(input);
-                // 逻辑计算
-                const logicRes = this.tryLogic(input); // 计算器逻辑通常需要原始符号，保持 input
+
+                // 3. 记忆提取与优先响应 (★★★ 修复核心 ★★★)
+                // 这里使用原始 input 进行匹配，确保名字不被预处理修改
+                // 如果提取到了名字，extractMemory 现在会直接返回欢迎语
+                const memoryRes = this.extractMemory(input);
+                if (memoryRes) return this.humanize(memoryRes);
+
+                // 4. 逻辑计算
+                const logicRes = this.tryLogic(input);
                 if (logicRes) return logicRes;
-                // 数据库搜索 (searchDatabase 内部不需要再调用 preprocess 了，直接传处理好的)
+
+                // 5. 数据库搜索
                 const dbRes = this.searchDatabase(processedInput);
                 if (dbRes) return this.humanize(dbRes);
-                // 模式匹配 (matchPattern 内部也不需要再调用 preprocess 了)
+
+                // 6. 模式匹配 (处理其他对话模式)
                 const patternRes = this.matchPattern(processedInput);
                 if (patternRes) return this.humanize(patternRes);
-                // 兜底回复
+
+                // 7. 兜底回复
                 return this.humanize(getPokerFallback());
             }
             // === 核心升级 1: 预处理同义词 (让它听懂各种说法) ===
@@ -1245,11 +1253,34 @@
                 return null;
             }
             extractMemory(input) {
-                const nameMatch = input.match(/(?:我叫|我是|名字是|唤作)(.*)/);
+                // 使用原始 input 进行正则匹配，防止名字被预处理破坏
+                const nameMatch = input.match(/(?:我叫|我是|名字是|唤作|称呼我为|叫我)\s*([^，,。?？!！]+)/i);
+
                 if (nameMatch) {
-                    this.memory.name = nameMatch[1].replace(/[。，！!]/g, "").trim();
-                    this.saveMemory();
+                    const newName = nameMatch[1].trim();
+                    if (newName) {
+                        // 1. 保存名字
+                        this.memory.name = newName;
+                        this.saveMemory();
+                        console.log("记忆已更新，新名字:", this.memory.name);
+
+                        // 2. ★★★ 新增：直接生成回复 ★★★
+                        // 尝试从 patterns 中找到对应的“名字”模式，以获取多样的回复模板
+                        // 这样就不用把欢迎语写死在这里，而是继续使用 patterns 里的配置
+                        const namePattern = this.patterns.find(p => p.regex.source.includes('我叫'));
+
+                        if (namePattern) {
+                            // 获取随机回复模板
+                            let response = this.getUniqueResponse(namePattern.regex.toString(), namePattern.responses);
+                            // 替换模板中的 $1 为新名字
+                            return response.replace(/\$1/g, newName);
+                        } else {
+                            // 备用：如果找不到模板（虽然不太可能），返回默认欢迎语
+                            return `你好${newName}，我已经记住你的名字了。`;
+                        }
+                    }
                 }
+                return null;
             }
             analyzeSentiment(input) {
                 const negativeWords = ['笨', '拙', '钝', '呆', '傻', '愚', '憨', '操', '逼', '日', '痴', '坏', '恶', '劣', '邪', '滚', '走', '退', '离', '死', '亡', '殁', '逝', '难过', '悲', '愁', '苦', '讨厌', '厌', '嫌', '憎'];
