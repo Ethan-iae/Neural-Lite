@@ -151,6 +151,14 @@
             color: #444;
             text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
             margin-left: 5px;
+            width: 130px;
+            /* 1. 给一个固定的宽度 (能容纳下最长文字即可) */
+            text-align: right;
+            /* 2. 让文字靠右对齐，锚定在右侧窗口边缘 */
+            white-space: nowrap;
+            /* 3. 禁止文字换行 */
+            overflow: hidden;
+            /* 4. 防止意外溢出 */
         }
 
         /* 聊天主窗口 - 类似 iChat */
