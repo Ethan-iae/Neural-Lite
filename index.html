@@ -384,6 +384,23 @@
             box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.5);
             font-family: "Lucida Grande", "Lucida Sans Unicode", "STHeiti", "华文黑体", sans-serif;
             /* 新增这一行 */
+
+        }
+
+        /* === 新增：强制隐藏 type="search" 自带的清除按钮和外观 === */
+        input[type="search"]::-webkit-search-decoration,
+        input[type="search"]::-webkit-search-cancel-button,
+        input[type="search"]::-webkit-search-results-button,
+        input[type="search"]::-webkit-search-results-decoration {
+            display: none;
+            -webkit-appearance: none;
+        }
+
+        /* 确保手机上圆角不会被系统样式覆盖 */
+        input[type="search"] {
+            -webkit-appearance: none;
+            appearance: none;
+            box-sizing: border-box;
         }
 
         input:focus {
@@ -431,7 +448,8 @@
             /* --- 核心修复结束 --- */
         }
 
-        button:active {
+        button:active,
+        button.pressed {
             background: linear-gradient(to bottom, #d0d0d0 0%, #e0e0e0 100%);
             box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
 
@@ -456,7 +474,9 @@
             filter: brightness(1.05);
         }
 
-        button.primary:active {
+        button.primary:active,
+        button.primary.pressed {
+            /* 新增这行 */
             background: linear-gradient(to bottom, #2c6fb5 0%, #468ccf 100%);
             box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.4);
         }
@@ -658,7 +678,7 @@
             .bubble {
                 max-width: 85%;
                 font-size: 15px;
-                padding: 9px 14px;
+                padding: 9.5px 14px;
             }
 
             /* 4. 头部优化 */
@@ -792,7 +812,8 @@
         </div>
         <div class="input-wrapper">
             <div class="input-box">
-                <input type="text" id="user-input" maxlength="200" placeholder="在此输入消息..."
+                <input type="search" id="user-input" maxlength="200" placeholder="在此输入消息..." autocomplete="off"
+                    autocorrect="off" autocapitalize="off" spellcheck="false" name="keyword_search"
                     onkeypress="handleEnter(event)">
                 <button id="send-btn" class="primary">发送</button>
             </div>
@@ -1635,31 +1656,50 @@
             const sendBtn = document.getElementById('send-btn');
             const input = document.getElementById('user-input');
 
-            // 定义发送逻辑
-            const handleSend = (e) => {
-                // 1. 阻止默认事件：这是核心！
-                // 这会阻止按钮获取焦点，从而防止输入框失去焦点
-                // 进而阻止键盘收起。
-                e.preventDefault();
-
-                // 2. 执行发送
-                sendMessage();
-
-                // 3. 双重保险：强制让输入框保持聚焦
-                // 虽然 preventDefault 应该已经够了，但这行能解决某些安卓机的兼容性问题
-                setTimeout(() => {
-                    input.focus();
-                }, 0);
+            // === 1. 按下 (Press) ===
+            // 只要手指/鼠标按下去，就加上深色样式，且阻止键盘收起
+            const handlePress = (e) => {
+                // 核心：阻止默认行为，防止手机键盘闪烁/收起
+                if (e.type === 'touchstart') {
+                    e.preventDefault();
+                }
+                sendBtn.classList.add('pressed');
             };
 
-            // 监听触摸开始 (手机端响应最快，要在手指抬起前就拦截)
-            sendBtn.addEventListener('touchstart', handleSend, { passive: false });
+            // === 2. 松开 (Release) ===
+            // 手指/鼠标抬起时：移除深色样式，并执行发送
+            const handleRelease = (e) => {
+                // 同样阻止默认行为
+                if (e.type === 'touchend') {
+                    e.preventDefault();
+                }
 
-            // 监听鼠标按下 (兼容电脑端，防止点击导致失焦)
-            sendBtn.addEventListener('mousedown', handleSend);
+                // 只有当按钮之前是被“按下”的状态时，才执行发送
+                // 这样可以避免一些奇怪的误触
+                if (sendBtn.classList.contains('pressed')) {
+                    sendBtn.classList.remove('pressed'); // 变回原色
+                    sendMessage(); // 发送消息
+                    setTimeout(() => input.focus(), 0); // 保持键盘聚焦
+                }
+            };
 
-            // 注意：不要再监听 'click'，因为 touchstart 里的 preventDefault 会阻止后续的 click 触发
-            // 这样就避免了发两条消息的问题
+            // === 3. 取消 (Cancel) ===
+            // 如果手指按住按钮然后滑走了（不想发了），或者鼠标移出了
+            // 此时只恢复颜色，不发送消息
+            const handleCancel = (e) => {
+                sendBtn.classList.remove('pressed');
+            };
+
+            // --- 绑定移动端事件 ---
+            sendBtn.addEventListener('touchstart', handlePress, { passive: false });
+            sendBtn.addEventListener('touchend', handleRelease, { passive: false });
+            sendBtn.addEventListener('touchcancel', handleCancel);
+
+            // --- 绑定电脑端事件 ---
+            sendBtn.addEventListener('mousedown', handlePress);
+            sendBtn.addEventListener('mouseup', handleRelease);
+            // 如果鼠标按住后移出按钮，视为放弃发送
+            sendBtn.addEventListener('mouseleave', handleCancel);
         })();
         // =========================================================
         // 3️⃣ UI 交互 (模拟真人打字效果)
@@ -1791,16 +1831,16 @@
         // =========================================
 
         // 1. 禁止右键菜单
-        document.oncontextmenu = function (e) {
-            e.preventDefault();
-            return false;
-        };
+        //document.oncontextmenu = function (e) {
+            //e.preventDefault();
+           // return false;
+        //};
 
         // 2. 禁止文本选中拖拽
-        document.onselectstart = function (e) {
-            e.preventDefault();
-            return false;
-        };
+        //document.onselectstart = function (e) {
+           // e.preventDefault();
+           // return false;
+        //};
 
         // 3. 拦截所有常见的开发者工具快捷键
         document.onkeydown = function (e) {
