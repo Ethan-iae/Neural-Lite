@@ -1504,8 +1504,9 @@
 
                     // --- 【策略 A】优先尝试你的代码 (WAQI) ---
                     try {
-                        const token = '8eb22fc66433b4f47fbc76b6c3b00a3375049fc2';
-                        const searchUrl = `https://api.waqi.info/search/?keyword=${encodeURIComponent(city)}&token=${token}`;
+                        // 修改为请求我们刚刚创建的 Cloudflare Function 后端
+                        // 注意：不需要 token 了，只需要传 city
+                        const searchUrl = `/weather?city=${encodeURIComponent(city)}`;
                         const searchRes = await fetch(searchUrl);
                         const searchJson = await searchRes.json();
                         let aqiVal = null;
