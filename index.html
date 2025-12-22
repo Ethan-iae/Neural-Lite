@@ -1919,7 +1919,15 @@
                 if (sendBtn.classList.contains('pressed')) {
                     sendBtn.classList.remove('pressed'); // 变回原色
                     sendMessage(); // 发送消息
-                    setTimeout(() => input.focus(), 0); // 保持键盘聚焦
+                    // === iPad 特殊判断 ===
+                    // iPadOS 13+ 会伪装成 Macintosh，所以必须同时检查 "Macintosh" 和 "触摸点数"
+                    const isIPad = (/Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1)
+                        || /iPad/i.test(navigator.userAgent);
+                    if (isIPad) {
+                        input.blur(); // iPad: 强制失去焦点，从而收起键盘
+                    } else {
+                        setTimeout(() => input.focus(), 0); // 手机/电脑: 保持键盘聚焦，方便连发
+                    }
                 }
             };
             // === 3. 取消 (Cancel) ===
