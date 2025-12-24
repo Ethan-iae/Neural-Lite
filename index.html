@@ -179,10 +179,10 @@
             flex: 1;
             overflow-y: auto;
             /* 恢复自动滚动条 */
-            padding: 20px;
+            padding: 12px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 17px;
             background: #fff;
             box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
             scroll-behavior: smooth;
@@ -742,6 +742,330 @@
         .modal-window .win-btn.close:hover {
             cursor: pointer;
         }
+
+        /* =========================================
+           🌑 Dark Aqua / Pro App Style (Deep Color)
+           风格灵感：OS X HUD 窗口 / Logic Pro 界面
+           ========================================= */
+        /* 背景：深炭灰 + 极低对比度的噪点纹理 (模拟阳极氧化铝) */
+        body.dark-mode {
+            background-color: #1a1a1a !important;
+            /* 使用重复渐变模拟细微的金属拉丝纹理 - 放大 200% */
+            background-image:
+                repeating-linear-gradient(90deg,
+                    transparent 0px,
+                    transparent 2px,
+                    /* 原来是 1px -> 改为 2px */
+                    rgba(0, 0, 0, 0.2) 2px,
+                    /* 原来是 1px -> 改为 2px */
+                    rgba(0, 0, 0, 0.2) 4px
+                    /* 原来是 2px -> 改为 4px */
+                ),
+                linear-gradient(to bottom, #2a2a2a, #1a1a1a) !important;
+            /* 这里也要对应放大 */
+            background-size: 8px 100%, 100% 100% !important;
+            /* 原来是 4px -> 改为 8px */
+        }
+
+        /* 1. 窗口框架：HUD 哑光黑风格 */
+        body.dark-mode .window-frame {
+            background: #282828;
+            /* 深灰底色 */
+            /* 关键修整：
+               1. 去掉原本的大面积光晕
+               2. inset 0 1px 0 rgba(255, 255, 255, 0.1): 顶部极细微的“轮廓光”
+               3. 0 0 0 1px #000: 纯黑的物理边框
+            */
+            box-shadow:
+                0 30px 60px rgba(0, 0, 0, 0.6),
+                0 0 0 1px #000,
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            /* 倒角稍微锐利一点，更有工业感 */
+        }
+
+        /* === 最终精简版：Pro Dark 哑光实体风格 === */
+        /* 1. 结构重置：只保留最基础的物理凸起感 */
+        body.dark-mode .win-btn {
+            /* 1px 纯黑边框，勾勒轮廓 */
+            border: 1px solid #000;
+            /* 关键：只有两层阴影
+               1. inset 0 1px 0: 顶部一道极淡的白线 (0.15透明度)，模拟金属厚度
+               2. 0 1px 2px: 底部淡淡的投影，让按钮浮起来
+            */
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.15),
+                0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        /* 2. 彻底干掉玻璃反光，这是“哑光”的核心 */
+        body.dark-mode .win-btn::after {
+            display: none;
+        }
+
+        /* 3. 颜色：使用简单的上下渐变，模拟微弱的光照 */
+        /* 红色 - 暗樱桃红 */
+        body.dark-mode .close {
+            background: linear-gradient(to bottom, #6b2e2e 0%, #400b0b 100%);
+        }
+
+        /* 悬停只加一点点亮度，保持克制 */
+        body.dark-mode .close:hover {
+            filter: brightness(1.2);
+        }
+
+        /* 黄色 - 暗琥珀色 (偏橙，防止发脏) */
+        body.dark-mode .min {
+            background: linear-gradient(to bottom, #755f26 0%, #423208 100%);
+        }
+
+        body.dark-mode .min:hover {
+            filter: brightness(1.2);
+        }
+
+        /* 绿色 - 暗松针绿 */
+        body.dark-mode .max {
+            background: linear-gradient(to bottom, #366639 0%, #122b14 100%);
+        }
+
+        body.dark-mode .max:hover {
+            filter: brightness(1.2);
+        }
+
+        /* 2. 标题栏：柔和的缎面金属 (Satin Finish) */
+        body.dark-mode .header {
+            /* 不再用 50% 的硬切，而是用平滑的深色渐变 */
+            background: linear-gradient(to bottom,
+                    #444444 0%,
+                    #333333 100%);
+            border-bottom: 1px solid #000;
+            /* 纯黑分割线 */
+            /* 顶部加一道极弱的高光，增加厚度感 */
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        }
+
+        body.dark-mode .header h1 {
+            color: #ccc;
+            /* 降低文字亮度，不刺眼 */
+            text-shadow: 0 -1px 0 rgba(0, 0, 0, 1);
+            /* 深蚀刻阴影 */
+            font-weight: bold;
+        }
+
+        body.dark-mode .status {
+            color: #999;
+            text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.8);
+        }
+
+        /* 3. 聊天区域：暗色背景 */
+        body.dark-mode #chat-container {
+            background: #1e1e1e;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        /* 滚动条深色化 */
+        body.dark-mode #chat-container::-webkit-scrollbar-track {
+            background: #2a2a2a;
+            border-left: 1px solid #111;
+        }
+
+        body.dark-mode #chat-container::-webkit-scrollbar-thumb {
+            background: #444;
+            border: 2px solid #2a2a2a;
+        }
+
+        body.dark-mode #chat-container::-webkit-scrollbar-thumb:hover {
+            background: #666;
+        }
+
+        /* 4. AI 气泡：镁合金粉末涂层 (Magnesium Alloy Powder Coat) */
+        body.dark-mode .ai-bubble {
+            /* 文字：灰度降低，蚀刻感极强，像激光刻字 */
+            color: #bfbfbf;
+            text-shadow: 0 -1px 0 #000;
+            /* 边框：纯黑，模拟零件接缝 */
+            border: 1px solid #000;
+            /* === 核心质感：磨砂颗粒纹理 === 
+               第一层：模拟表面微小的凸起颗粒 (Noise)
+               第二层：模拟金属的冷光漫反射 (Base)
+            */
+            background-image:
+                radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, #333333 0%, #1a1a1a 100%);
+            /* 让颗粒感密集一点 */
+            background-size: 3px 3px, 100% 100%;
+            /* === 物理厚度光影 ===
+               1. 0 2px 5px: 沉重的落地阴影，让它看起来很重
+               2. inset 0 1px 0: 顶部极细的钝光 (由 0.15 降到 0.08，不刺眼)
+               3. inset 0 0 10px: 内部压暗，模拟吸光材料
+            */
+            box-shadow:
+                /* 外部投影：从 0.8 降到 0.45 (变淡了) */
+                0 2px 5px rgba(0, 0, 0, 0.45),
+                /* 顶部高光：保持微弱 (0.08) */
+                inset 0 1px 0 rgba(255, 255, 255, 0.08),
+                /* 内部压暗：从 0.3 降到 0.2(内部不那么黑了) */
+                inset 0 0 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 彻底移除任何玻璃光泽 */
+        body.dark-mode .ai-bubble::after {
+            display: none;
+        }
+
+        body.dark-mode b {
+            color: #fff;
+            /* 强调文字变白 */
+        }
+
+        /* 5. 用户气泡：深海蓝拉丝金属 (Brushed Midnight Blue Metal) */
+        body.dark-mode .user-bubble {
+            /* 文字：银灰色 */
+            color: #c0c8d0;
+            text-shadow: 0 -1px 0 #000;
+            /* 边框：深黑蓝 */
+            border: 1px solid #0d1218;
+            /* === 核心质感：拉丝纹理 === 
+               第一层：横向的微弱条纹 (Brushed texture)
+               第二层：深邃的午夜蓝底色
+            */
+            background-image:
+                repeating-linear-gradient(90deg,
+                    rgba(255, 255, 255, 0.02) 0px,
+                    rgba(255, 255, 255, 0.02) 1px,
+                    transparent 1px,
+                    transparent 2px),
+                linear-gradient(to bottom, #2c3e50 0%, #15202b 100%);
+            background-size: 100% 100%;
+            /* 光影：
+               inset 0 1px 0: 顶部微弱的金属反光
+               inset 0 0 5px: 让蓝色看起来更深邃，不发飘
+            */
+            box-shadow:
+                /* 外部投影：从 0.8 降到 0.45 */
+                0 2px 5px rgba(0, 0, 0, 0.45),
+                /* 顶部高光 */
+                inset 0 1px 0 rgba(255, 255, 255, 0.08),
+                /* 内部压暗：从 0.4 降到 0.2*/
+                inset 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 移除玻璃光泽 */
+        body.dark-mode .user-bubble::after {
+            display: none !important;
+        }
+
+        /* 6. 底部输入区：深色金属 */
+        body.dark-mode .input-wrapper {
+            background: linear-gradient(to bottom, #444 0%, #2a2a2a 100%);
+            border-top: 1px solid #111;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        }
+
+        body.dark-mode input {
+            background: #252525;
+            color: #fff;
+            border: 1px solid #111;
+            border-bottom-color: #444;
+            /* 模拟底部反光 */
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6), 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        /* 8. 发送按钮：专业相机快门风格 (Matte Shutter Button) */
+        body.dark-mode button.primary {
+            /* 1. 字体：激光蚀刻白字 */
+            color: #d9d9d9;
+            text-shadow: 0 -1px 0 #000;
+            /* 2. 边框：精密机械的黑色接缝 */
+            border: 1px solid #000;
+            /* 3. 材质核心：枪灰色粉末涂层 (Gunmetal Powder Coat)
+               - 第一层：微小的噪点颗粒 (增加摩擦感)
+               - 第二层：从深灰(#464646)到炭黑(#2a2a2a)的垂直渐变
+            */
+            background-image:
+                radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, #464646 0%, #2a2a2a 100%);
+            background-size: 3px 3px, 100% 100%;
+            /* 4. 光影 (已调低浓度，不脏)：
+               - 0 2px 4px: 干净的外部投影 (0.4透明度)
+               - inset 0 1px 0: 顶部锐利的金属倒角光 (Rim Light)
+            */
+            box-shadow:
+                0 2px 4px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        /* 悬停状态：稍微提亮一点点 */
+        body.dark-mode button.primary:hover {
+            filter: brightness(1.1);
+        }
+
+        /* 按下状态：像按下机械开关一样深陷 */
+        body.dark-mode button.primary:active,
+        body.dark-mode button.primary.pressed {
+            /* 变为纯深色，模拟光线被遮挡 */
+            background: #222;
+            /* 只有内部阴影，制造“坑”的感觉 */
+            box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.5);
+            border-color: #000 !important;
+            transform: translateY(1px);
+            /* 1px 的物理下沉位移 */
+        }
+
+        /* 8. 模态窗口适配 */
+        body.dark-mode .modal-window {
+            background: #2b2b2b;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9);
+            border: 1px solid #000;
+        }
+
+        body.dark-mode .modal-content {
+            color: #ccc;
+        }
+
+        /* === 新增：暗色模式头像 - 哑光金属质感 (Matte Metal Finish) === */
+        /* 1. AI 头像：深空灰铝合金 (Space Grey Aluminum) */
+        body.dark-mode .ai-avatar {
+            /* 平滑渐变：不再有 50% 的硬切线。
+               从亮灰平滑过渡到暗灰，模拟金属表面的漫反射。
+            */
+            background: linear-gradient(to bottom,
+                    #5e5e5e 0%,
+                    #3d3d3d 100%);
+            /* 字体：稍微降低一点白度，配合蚀刻投影 */
+            color: #ddd;
+            text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.8);
+            /* 凹陷感文字 */
+            /* 边框：深色金属边 */
+            border: 1px solid #222;
+            /* 关键质感来源：
+               inset 0 1px 0: 顶部边缘的一道微弱亮光（金属倒角）。
+               0 1px 2px: 柔和的外部投影。
+            */
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.15),
+                0 1px 2px rgba(0, 0, 0, 0.4);
+        }
+
+        /* 2. Me 头像：阳极氧化蓝金属 (Anodized Blue Metal) */
+        body.dark-mode .user-avatar {
+            /* 去除了原本的高光断层，改为低调的蓝灰色渐变。
+               模拟经过磨砂处理的蓝色金属表面。
+            */
+            background: linear-gradient(to bottom,
+                    #527090 0%,
+                    /* 顶部：带有金属质感的灰蓝 */
+                    #32465c 100%
+                    /* 底部：深沉的氧化蓝 */
+                );
+            color: #efefef;
+            text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.8);
+            border: 1px solid #1a2633;
+            /* 匹配色调的深框 */
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.15),
+                0 1px 2px rgba(0, 0, 0, 0.4);
+        }
     </style>
 </head>
 
@@ -753,8 +1077,11 @@
                 <div class="win-btn min"></div>
                 <div class="win-btn max"></div>
             </div>
-            <h1 onclick="if(window.innerWidth <= 768) resetSystem()">
-                <span></span> Neural-Lite <span style="font-weight:normal; opacity:0.6; font-size: 0.9em;"> v1.0</span>
+            <h1>
+                <span></span>
+                <span onclick="resetSystem()" style="cursor: pointer;">Neural-Lite</span>
+                <span onclick="if(window.innerWidth <= 768) toggleDarkMode()"
+                    style="font-weight:normal; opacity:0.6; font-size: 0.9em; cursor: pointer;"> v1.0</span>
             </h1>
             <div class="status" id="db-status">
                 <script>
@@ -2204,6 +2531,41 @@
         }
         // ★★★ 启动时立即加载记录 ★★★
         loadChatHistory();
+        // =========================================
+        // 🌗 深色模式切换系统
+        // =========================================
+        function toggleDarkMode() {
+            const body = document.body;
+            body.classList.toggle('dark-mode');
+            // 播放一个清脆的开关音效 (复用现有的 recv 音效，或者静音)
+            if (body.classList.contains('dark-mode')) {
+                // 保存设置
+                localStorage.setItem('neural_lite_theme', 'dark');
+                // 让输入框变色后重新获取焦点时不突兀
+                if (document.activeElement === userInput) userInput.blur();
+            } else {
+                localStorage.setItem('neural_lite_theme', 'light');
+            }
+        }
+        // 1. 初始化：读取用户之前的偏好
+        (function initTheme() {
+            const savedTheme = localStorage.getItem('neural_lite_theme');
+            // 如果存过 dark，或者没存过但系统是深色模式，则默认开启
+            const sysDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+            }
+        })();
+        // 2. 绑定按钮：将标题栏的“黄色按钮”变成开关
+        // 等待 DOM 加载
+        setTimeout(() => {
+            const minBtn = document.querySelector('.win-btn.min');
+            if (minBtn) {
+                minBtn.style.cursor = 'pointer';
+                minBtn.title = "切换日/夜模式"; // 鼠标悬停提示
+                minBtn.onclick = toggleDarkMode;
+            }
+        }, 100);
         // =========================================
         // 🔴 新版重置系统 (自定义弹窗版)
         // =========================================
