@@ -73,6 +73,9 @@
             flex-shrink: 0;
             cursor: default;
             position: relative;
+            user-select: none;
+            -webkit-user-select: none;
+            /* 兼容 Safari/Chrome */
         }
 
         .header h1 {
@@ -90,6 +93,17 @@
             /* 走到最中间 */
             transform: translateX(-50%);
             /* 把自己的中心点对准中间 */
+        }
+
+        /* === 新增：电脑/iPad 标题禁止交互 === */
+        .responsive-title {
+            cursor: default !important;
+            /* 强制显示箭头，不要手型 */
+            pointer-events: none;
+            /* 关键：彻底禁用点击事件，变成“死”的文字 */
+            user-select: none;
+            /* 禁止选中文字 */
+            -webkit-user-select: none;
         }
 
         /* 模拟红绿灯窗口按钮 - Aqua / Snow Leopard 风格 */
@@ -609,6 +623,14 @@
                 /* 清除可能存在的外边距 */
             }
 
+            /* === 新增：手机端恢复标题点击 === */
+            .responsive-title {
+                cursor: pointer !important;
+                /* 恢复手型 */
+                pointer-events: auto;
+                /* 恢复点击功能 */
+            }
+
             /* === 在这里插入新代码 === */
             /* ★★★ 核心修改：强制将状态栏推到右侧 ★★★ */
             .status {
@@ -1066,6 +1088,44 @@
                 inset 0 1px 0 rgba(255, 255, 255, 0.15),
                 0 1px 2px rgba(0, 0, 0, 0.4);
         }
+
+        /* =========================================
+   🍏 macOS X 开机淡入特效 (Boot Fade-In)
+   ========================================= */
+        @keyframes macBootFade {
+            0% {
+                opacity: 0;
+                transform: scale(0.96);
+                /* 初始稍微小一点，制造纵深感 */
+                filter: blur(5px);
+                /* 初始模糊，模拟旧显示器或视觉聚焦过程 */
+            }
+
+            40% {
+                opacity: 1;
+                /* 中途就已经完全不透明了 */
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1);
+                /* 最终恢复原大小 */
+                filter: blur(0);
+                /* 清除模糊 */
+            }
+        }
+
+        /* 找到现有的 .window-frame 类，添加 animation 属性 */
+        .window-frame {
+            /* 1.5s: 动画时长，慢一点才优雅
+       cubic-bezier: 经典的 Apple 缓动曲线 (Ease-Out)，先快后慢
+       forwards: 动画结束后保持最终状态
+    */
+            animation: macBootFade 1.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+            /* 确保初始状态不闪烁，配合 animation 使用 */
+            will-change: transform, opacity, filter;
+            /* 保持你原有的其他样式 (width, height, background 等) 不变 */
+        }
     </style>
 </head>
 
@@ -1079,9 +1139,9 @@
             </div>
             <h1>
                 <span></span>
-                <span onclick="resetSystem()" style="cursor: pointer;">Neural-Lite</span>
-                <span onclick="if(window.innerWidth <= 768) toggleDarkMode()"
-                    style="font-weight:normal; opacity:0.6; font-size: 0.9em; cursor: pointer;"> v1.0</span>
+                <span class="responsive-title" onclick="resetSystem()">Neural-Lite</span>
+                <span class="responsive-title" onclick="if(window.innerWidth <= 768) toggleDarkMode()"
+                    style="font-weight:normal; opacity:0.6; font-size: 0.9em;"> v1.0</span>
             </h1>
             <div class="status" id="db-status">
                 <script>
@@ -2594,6 +2654,59 @@
                 location.reload();
             }, 300);
         }
+        // =========================================
+        // 🖱️ 物理拖拽系统 (终极版：防粘连 + 防文字误选)
+        // =========================================
+        (function makeDraggable() {
+            const frame = document.querySelector('.window-frame');
+            const header = document.querySelector('.header');
+            // 仅在非移动端生效
+            if (window.innerWidth <= 768) return;
+            let isDragging = false;
+            let startX, startY; // 移除未使用的变量
+            function stopDrag() {
+                if (!isDragging) return;
+                isDragging = false;
+                frame.style.transform = '';
+                frame.style.boxShadow = '';
+                frame.style.cursor = 'default';
+                header.style.cursor = 'default';
+            }
+            header.addEventListener('mousedown', (e) => {
+                // 如果点的是按钮或标题文字，别拖动
+                if (e.target.closest('.win-btn') || e.target.closest('h1 span')) return;
+                // ★★★ 核心修复：阻止浏览器默认的“选中文本”行为 ★★★
+                // 加了这一行，鼠标怎么拖都不会变成“工”字型光标了
+                e.preventDefault();
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                const rect = frame.getBoundingClientRect();
+                frame.style.margin = '0';
+                frame.style.position = 'absolute';
+                frame.style.left = rect.left + 'px';
+                frame.style.top = rect.top + 'px';
+            });
+            document.addEventListener('mousemove', (e) => {
+                // 安全阀：如果没有按键按下，强制停止
+                if (isDragging && e.buttons === 0) {
+                    stopDrag();
+                    return;
+                }
+                if (!isDragging) return;
+                // 再次确保拖动过程中不选中文本
+                e.preventDefault();
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                frame.style.left = `${parseFloat(frame.style.left) + dx}px`;
+                frame.style.top = `${parseFloat(frame.style.top) + dy}px`;
+                startX = e.clientX;
+                startY = e.clientY;
+            });
+            document.addEventListener('mouseup', stopDrag);
+            document.addEventListener('mouseleave', stopDrag);
+            window.addEventListener('blur', stopDrag);
+        })();
     </script>
     <div id="custom-modal" class="modal-overlay">
         <div class="modal-window">
