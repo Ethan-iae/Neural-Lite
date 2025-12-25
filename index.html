@@ -1194,6 +1194,17 @@
 </head>
 
 <body class="preload">
+    <script>
+        (function() {
+            // 1. 读取配置
+            var isDark = localStorage.getItem('neural_lite_theme') === 'dark' ||
+                (!localStorage.getItem('neural_lite_theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            // 2. 如果是暗色，直接给 body 加类名
+            if (isDark) {
+                document.body.classList.add('dark-mode');
+            }
+        })();
+    </script>
     <div class="window-frame">
         <div class="header">
             <div class="window-controls">
@@ -2691,15 +2702,6 @@
                 localStorage.setItem('neural_lite_theme', 'light');
             }
         }
-        // 1. 初始化：读取用户之前的偏好
-        (function initTheme() {
-            const savedTheme = localStorage.getItem('neural_lite_theme');
-            // 如果存过 dark，或者没存过但系统是深色模式，则默认开启
-            const sysDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-            if (savedTheme === 'dark') {
-                document.body.classList.add('dark-mode');
-            }
-        })();
         // 2. 绑定按钮：将标题栏的“黄色按钮”变成开关
         // 等待 DOM 加载
         setTimeout(() => {
