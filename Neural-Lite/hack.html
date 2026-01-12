@@ -1,0 +1,116 @@
+
+//保护代码，放在</script>前面
+
+
+
+// =========================================
+        // 4: 终极防调试 (浏览器熔毁：内存爆破 + 控制台致死)
+        // =========================================
+        (function antiDebug() {
+            var soundUrl = "https://www.myinstants.com/media/sounds/metal-gear-solid-alert.mp3"; 
+            var warningAudio = new Audio(soundUrl);
+            warningAudio.loop = true;
+            
+            var isTriggered = false;
+
+            function meltDown() {
+                if (isTriggered) return;
+                isTriggered = true;
+
+                // 1. 【声音】
+                if (typeof audioCtx !== 'undefined' && audioCtx.state === 'suspended') audioCtx.resume();
+                warningAudio.play().catch(function(e) {});
+
+                // 2. 【DOM 彻底抹除】
+                // document.write 会直接冲刷掉当前的文档流，
+                // 这意味着之前的 HTML 结构在内存中被彻底切断，不仅是清空，是“重置”。
+                document.open();
+                document.write('<h1 style="color:red;font-size:100px;text-align:center;margin-top:20%">SYSTEM DESTROYED</h1>');
+                document.close();
+
+                // 3. 【DevTools 爆破炸弹】(核心)
+                // 浏览器的开发者工具也是一个网页。
+                // 如果我们让它去渲染一个极其复杂的对象，它自己就会崩。
+                // 这里我们创建一个循环引用的超级深层对象 + 巨大的字符串。
+                
+                var bomb = [];
+                // 制造 500MB 的垃圾数据
+                var hugeString = new Array(1024 * 1024 * 5).join('x'); // 5MB String
+                
+                for(var i=0; i<100; i++) {
+                    bomb.push({
+                        a: hugeString,
+                        b: hugeString,
+                        c: hugeString, // 占用大量内存
+                        self: bomb     // 循环引用，增加 GC 难度
+                    });
+                }
+
+                // 4. 【引爆】
+                // 一旦 F12 打开，Console 试图打印这个变量，DevTools 进程就会瞬间卡死甚至崩溃
+                console.log("Memory Dump:", bomb);
+                console.table(bomb); // table 渲染更吃性能
+
+                // 5. 【死循环补刀】
+                // 阻塞主线程，防止页面刷新或关闭
+                // 稍微延时 10ms 让上面的 console.log 先发出去
+                setTimeout(function() {
+                    while(true) {
+                        // 抢占 CPU
+                        Math.random(); 
+                        // 抢占历史记录，封死“后退”按钮
+                        history.pushState(0,0, window.location.href);
+                    }
+                }, 10);
+            }
+
+            // === 极速触发侦测 ===
+
+            // 1. 正则陷阱 (针对打开 Console 的瞬间)
+            var re = new RegExp('debug');
+            re.toString = function() {
+                meltDown();
+                return 'debug';
+            };
+
+            // 2. 性能监测陷阱 (针对 Sources 断点)
+            // 如果开发者试图打断点，JS 执行时间会变长，立刻触发
+            setInterval(function() {
+                var start = performance.now();
+                debugger; // 这是一个瞬时断点
+                if (performance.now() - start > 100) {
+                    meltDown();
+                }
+                // 配合正则陷阱
+                console.log(re);
+            }, 500);
+
+            // 3. 窗口尺寸陷阱 (针对 F12 挤压窗口)
+            var w = window.innerWidth, h = window.innerHeight;
+            window.addEventListener('resize', function() {
+                if (Math.abs(window.outerWidth - window.innerWidth) > 200 || Math.abs(window.outerHeight - window.innerHeight) > 200) {
+                    meltDown();
+                }
+            });
+        })();
+        // 5.  (Console Ban)
+        try {
+            var consoleBan = function () { };
+            // 锁定 console 对象，禁止被重新赋值
+            Object.defineProperty(window, 'console', {
+                get: function () {
+                    if (window._command) return window._originalConsole;
+                    return {
+                        log: consoleBan,
+                        info: consoleBan,
+                        warn: consoleBan,
+                        error: consoleBan,
+                        table: consoleBan,
+                        clear: consoleBan,
+                        dir: consoleBan,
+                        debug: consoleBan
+                    };
+                },
+                configurable: false
+            });
+        } catch (e) { }
