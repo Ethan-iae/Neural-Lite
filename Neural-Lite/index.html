@@ -1952,7 +1952,6 @@
                                 }
                             }
                         }
-                        
                     }
                     // ============================================
                     // 🚀 AQI 混合策略：优先 WAQI -> 失败则 Open-Meteo
@@ -2076,46 +2075,6 @@
                     return "我现在无法连接网络，看不了天气。";
                 }
             }
-            // === ⬇️ 这里是新加的百科功能 (开始) ⬇️ ===
-            async checkWiki(input) {
-                // 1. 看看你在说什么，是不是想查百科
-                // 比如：什么是黑洞？ 谁是马斯克？ 百科苹果
-                const regex = /^(?:什么是|谁是|搜索|查询|百科|介绍|查一下)\s*(.+)|(.+)(?:是什么|是谁)$/i;
-                const match = input.match(regex);
-                
-                if (!match) return null; // 没匹配到，退出
-                
-                // 提取关键词
-                let keyword = (match[1] || match[2]).trim();
-                keyword = keyword.replace(/[？?。！!]/g, ""); // 去掉标点
-                if (!keyword) return null;
-
-                // 2. 告诉用户正在查
-                addBubble(`🔍 正在检索知识库：关于“${keyword}”...`, 'ai');
-                if (typeof playSound === 'function') playSound('recv');
-
-                try {
-                    // 3. 呼叫我们第一步写的后端
-                    const res = await fetch(`/api/waqi?type=wiki&keyword=${encodeURIComponent(keyword)}`);
-                    const json = await res.json();
-
-                    if (json.found && json.data) {
-                        const info = json.data;
-                        // 拼装回复内容
-                        let report = `📖 **${info.title}**\n${info.extract}\n`;
-                        // 如果有图片，显示图片
-                        if (info.thumbnail && info.thumbnail.source) {
-                            report += `<br><img src="${info.thumbnail.source}" style="width:100%; margin-top:10px; border-radius:8px;">`;
-                        }
-                        return report;
-                    } else {
-                        return `📚 抱歉，百科全书里没找到关于“${keyword}”的记录。`;
-                    }
-                } catch (e) {
-                    return "网络开小差了，连不上百科知识库。";
-                }
-            }
-            // === ⬆️ 这里是新加的百科功能 (结束) ⬆️ ===
             // 入口函数
             // [请用这段代码替换原有的 process 方法]
             async process(input) {
@@ -2132,10 +2091,6 @@
                     this.saveContext(text, finalResponse); // 保存记忆
                     return finalResponse;
                 }
-                // === 新插入：检查百科 ===
-                const wikiRes = await this.checkWiki(text);
-                if (wikiRes) { this.saveContext(text, wikiRes); return wikiRes; }
-
                 // 3. 话题名词捕捉 (保持原样)
                 for (let item of this.db) {
                     if (item.q.length <= 5 && processedInput.includes(item.q)) {

@@ -2,38 +2,6 @@ export async function onRequest(context) {
     // 从请求 URL 中获取查询参数 (city)
     const { request } = context;
     const url = new URL(request.url);
-    // === 1. 新增：先看看是不是查百科 ===
-    const type = url.searchParams.get("type"); 
-
-    if (type === "wiki") {
-        const keyword = url.searchParams.get("keyword");
-        if (!keyword) return new Response("Missing keyword", { status: 400 });
-
-        // 维基百科接口地址
-        const targetUrl = `https://zh.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(keyword)}`;
-        
-        try {
-            const response = await fetch(targetUrl, {
-                headers: { "User-Agent": "Neural-Lite-Bot/1.0" } // 必填身份标识
-            });
-
-            // 如果没找到词条
-            if (response.status === 404) {
-                return new Response(JSON.stringify({ found: false }), {
-                    headers: { "content-type": "application/json" }
-                });
-            }
-
-            // 找到了，返回数据
-            const data = await response.json();
-            return new Response(JSON.stringify({ found: true, data: data }), {
-                headers: { "content-type": "application/json" }
-            });
-        } catch (err) {
-            return new Response(JSON.stringify({ found: false }), { status: 500 });
-        }
-    }
-    // === 插入结束，下面是你原来的代码，不用动 ===
     const city = url.searchParams.get("city");
 
     if (!city) {
