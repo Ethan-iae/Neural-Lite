@@ -8,6 +8,7 @@
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content, maximum-scale=1.0, user-scalable=no">
     <title>Neural-Lite</title>
+    <link rel="icon" type="image/png" href="alien-monster_1f47e.png">
     <style>
         /* =========================================
                 Aqua/Skeuomorphic Style System
@@ -47,8 +48,8 @@
         /* 模拟 OS X 窗口 */
         .window-frame {
             width: 100%;
-            max-width: 800px;
-            height: 90vh;
+            max-width: 720px;
+            height: 77vh;
             background: #ececec;
             border-radius: 5px 5px 3px 3px;
             box-shadow:
@@ -64,7 +65,7 @@
         .header {
             background: linear-gradient(to bottom, #e6e6e6 0%, #d0d0d0 50%, #b8b8b8 51%, #c0c0c0 100%);
             padding: 0 15px;
-            height: 36px;
+            height: 31px;
             border-bottom: 1px solid #555;
             display: flex;
             justify-content: space-between;
@@ -106,67 +107,64 @@
             -webkit-user-select: none;
         }
 
-        /* 模拟红绿灯窗口按钮 - Aqua / Snow Leopard 风格 */
+        /* 模拟红绿灯窗口按钮 - 极致 Aqua 3D 拟物风格 */
         .window-controls {
             display: flex;
-            gap: 8px;
-            /*稍微拉大一点间距以适应阴影 */
+            gap: 7.2px;
             align-items: center;
         }
 
         .win-btn {
             width: 14px;
-            /* 稍微增大一点尺寸以展示细节 */
             height: 14px;
             border-radius: 50%;
             position: relative;
-            /* 为伪元素定位做准备 */
-            /* 核心边框：深色半透明，产生镶嵌感 */
-            border: 1px solid rgba(0, 0, 0, 0.4);
-            /* 阴影层叠：
-            1. 外部投影 (drop-shadow)
-            2. 内部顶部高光边框 (inset top light)
-            3. 内部底部阴影 (inset bottom shadow) 增加体积感
-            */
+            /* 1. 更深的半透明边框来勾勒球体边缘 */
+            border: 1px solid rgba(0, 0, 0, 0.25);
+            /* 2. 核心立体光影：外部下拉投影 + 内部顶部压暗 + 内部底部高光透光 */
             box-shadow:
-                0 1px 2px rgba(0, 0, 0, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.4),
-                inset 0 -1px 1px rgba(0, 0, 0, 0.2);
+                0 1px 2px rgba(0, 0, 0, 0.25),                 /* 外部轻微投影 */
+                inset 0 2px 4px rgba(0, 0, 0, 0.35),           /* 内部顶部暗角，制造球体纵深 */
+                inset 0 -3px 4px rgba(255, 255, 255, 0.7);     /* 内部底部强烈反光 (晶莹剔透感) */
         }
 
-        /* 标志性的“玻璃反光”高光 - 使用伪元素实现上半部分的强反光 */
+        /* 3. 标志性的“玻璃反光”高光 - 锐利的顶部弧形 */
         .win-btn::after {
             content: '';
             position: absolute;
             top: 1px;
-            left: 2px;
-            right: 2px;
-            height: 5px;
-            /* 占据上半部分 */
-            /* 垂直的白色渐变，模拟灯光反射 */
-            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.1) 100%);
-            /* 椭圆形的倒角 */
-            border-top-left-radius: 6px;
-            border-top-right-radius: 6px;
-            border-bottom-left-radius: 4px;
-            border-bottom-right-radius: 4px;
+            left: 2.5px;
+            right: 2.5px;
+            height: 4.5px;
+            /* 强烈的纯白渐变，模拟顶部直接光源反射 */
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.1) 100%);
+            /* 平滑的水滴状倒角 */
+            border-radius: 6px 6px 3px 3px;
         }
 
-        /* 红色按钮 - 深红到鲜红的渐变 */
+        /* 4. 使用径向渐变 (Radial Gradient) 替代原本的线性渐变，完美模拟光源在底部的折射 */
+        /* 红色按钮 - 樱桃红 */
         .close {
-            background: linear-gradient(to bottom, #ff7b7b 0%, #ce1315 100%);
+            /* 提纯了中间的红色(#ff2a2a)，加深了边缘和顶部的暗红(#9a0000) */
+            background: radial-gradient(circle at 50% 85%, #ffb3b3 0%, #ff2a2a 45%, #9a0000 90%);
+            border: 1px solid #800000;
         }
 
-        /* 黄色按钮 - 琥珀色渐变 */
+        /* 黄色按钮 - 琥珀橙 */
         .min {
-            background: linear-gradient(to bottom, #ffdf60 0%, #d89602 100%);
+            /* 经典 Aqua 的黄色其实偏向高饱和的橙色(#ffaa00)，底部泛亮黄 */
+            background: radial-gradient(circle at 50% 85%, #ffee8c 0%, #ffaa00 45%, #a64b00 90%);
+            border: 1px solid #854500;
         }
 
-        /* 绿色按钮 - 宝石绿渐变 */
+        /* 绿色按钮 - 苹果绿 */
         .max {
-            background: linear-gradient(to bottom, #98e858 0%, #2a9d16 100%);
+            /* 使用了更纯粹的翠绿(#3cc706)，对比顶部的深森林绿，饱和度直接拉满 */
+            background: radial-gradient(circle at 50% 85%, #a9f274 0%, #3cc706 45%, #105c00 90%);
+            border: 1px solid #114a02;
         }
-
+        
+        
         /* 状态栏文字样式保持不变，微调阴影增强凹陷感 */
         .status {
             /* 1. 颜色字体保持不变 */
@@ -193,11 +191,11 @@
             flex: 1;
             overflow-y: auto;
             /* 恢复自动滚动条 */
-            padding: 12px;
+            padding: 18.5px;
             display: flex;
             flex-direction: column;
             gap: 17px;
-            background: #fff;
+            background: #ebeef3;
             box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
             scroll-behavior: smooth;
             scrollbar-gutter: stable;
@@ -267,7 +265,7 @@
         ========================================= */
         /* 基础气泡结构 - 胶囊形状 */
         .bubble {
-            padding: 8px 15px;
+            padding: 5px 15px;
             border-radius: 20px;
             /* 更加圆润的胶囊形 */
             font-size: 13px;
@@ -364,12 +362,46 @@
             display: flex;
             align-items: center;
             box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
-            height: 50px;
+            height: 30px;
             flex-shrink: 0;
+            position: relative; /* 新增这一行 */
         }
+        /* 新增：Aqua 右下角精准拖拽柄 (纯手工 3 条线版) */
+.input-wrapper::after {
+    content: '';
+    position: absolute;
+    bottom: 3px;
+    right: 3px;
+    width: 14px;
+    height: 14px;
+    /* 135度从左上到右下。前半截透明，只在右下角画三条线，自然形成三角形 */
+    background-image: linear-gradient(
+        135deg,
+        transparent 0px, transparent 10px,
 
-        .input-box {
-            width: 100%;
+        /* 第 1 条线（最内侧，最长） */
+        rgba(0, 0, 0, 0.4) 10px, rgba(0, 0, 0, 0.4) 11px,
+        rgba(255, 255, 255, 0.9) 11px, rgba(255, 255, 255, 0.9) 12px,
+
+        transparent 12px, transparent 14px,
+
+        /* 第 2 条线（居中，稍短） */
+        rgba(0, 0, 0, 0.4) 14px, rgba(0, 0, 0, 0.4) 15px,
+        rgba(255, 255, 255, 0.9) 15px, rgba(255, 255, 255, 0.9) 16px,
+
+        transparent 16px, transparent 18px,
+
+        /* 第 3 条线（最角落，最短的点缀） */
+        rgba(0, 0, 0, 0.4) 18px, rgba(0, 0, 0, 0.4) 19px,
+        rgba(255, 255, 255, 0.9) 19px, rgba(255, 255, 255, 0.9) 20px
+    );
+    pointer-events: none;
+}
+
+       .input-box {
+            width: 96%; /* 控制输入框的总体宽度，可以根据喜好修改为 70% 或 80% */
+            max-width: 10000px; /* 设置一个最大宽度，防止在大屏幕上太长 */
+            margin: 0 auto; /* 核心：让缩短后的输入框在底部完美居中 */
             display: flex;
             gap: 10px;
             align-items: center;
@@ -382,8 +414,8 @@
             border: 1px solid #777;
             border-bottom-color: #999;
             color: #333;
-            padding: 6px 12px;
-            border-radius: 15px;
+            padding: 4px 12px;
+            border-radius: 50px;
             outline: none;
             font-size: 13px;
             box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.5);
@@ -676,7 +708,7 @@
             .bubble {
                 max-width: 85%;
                 font-size: 15px;
-                padding: 9.5px 14px;
+                padding: 8px 14px;
             }
 
             /* 4. 头部优化 */
@@ -983,6 +1015,29 @@
             border-top: 1px solid #111;
             box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
         }
+        /* 新增：暗色模式下的精准拖拽柄 */
+body.dark-mode .input-wrapper::after {
+    background-image: linear-gradient(
+        135deg,
+        transparent 0px, transparent 10px,
+
+        /* 第 1 条线 */
+        rgba(0, 0, 0, 0.8) 10px, rgba(0, 0, 0, 0.8) 11px,
+        rgba(255, 255, 255, 0.15) 11px, rgba(255, 255, 255, 0.15) 12px,
+
+        transparent 12px, transparent 14px,
+
+        /* 第 2 条线 */
+        rgba(0, 0, 0, 0.8) 14px, rgba(0, 0, 0, 0.8) 15px,
+        rgba(255, 255, 255, 0.15) 15px, rgba(255, 255, 255, 0.15) 16px,
+
+        transparent 16px, transparent 18px,
+
+        /* 第 3 条线 */
+        rgba(0, 0, 0, 0.8) 18px, rgba(0, 0, 0, 0.8) 19px,
+        rgba(255, 255, 255, 0.15) 19px, rgba(255, 255, 255, 0.15) 20px
+    );
+}
 
         body.dark-mode input {
             background: #252525;
@@ -1177,8 +1232,60 @@
         .max {
             transition: background 0.35s cubic-bezier(0.4, 0, 0.2, 1), filter 0.2s;
         }
+
+        /* === 新增：大屏幕（iPad 和 电脑）隐藏发送按钮 === */
+@media screen and (min-width: 769px) {
+    #send-btn {
+        display: none !important; /* 隐藏按钮 */
+    }
+    
+    .input-box {
+        gap: 0; /* 既然没按钮了，去掉原本 10px 的间距 */
+    }
+    
+    .input-box input {
+        width: 100%; /* 确保输入框占满全宽 */
+    }
+}
+
+/* 确保输入框右侧有足够的填充，不被图标遮挡 */
+#user-input {
+    padding-right: 45px !important;
+}
+
+/* 拟物化表情按钮样式 */
+.emoji-item {
+    cursor: pointer;
+    font-size: 20px;
+    padding: 4px;
+    border-radius: 4px;
+    text-align: center;
+    transition: background 0.1s;
+}
+.emoji-item:hover {
+    background: rgba(0,0,0,0.1);
+}
+
+/* 暗色模式适配 */
+body.dark-mode #emoji-panel {
+    background: #2b2b2b;
+    border-color: #000;
+}
+body.dark-mode #emoji-btn svg path, 
+body.dark-mode #emoji-btn svg circle,
+body.dark-mode #emoji-btn svg line {
+    stroke: #ccc;
+    fill: none;
+}
+body.dark-mode #emoji-btn svg path[fill="#333"] {
+    fill: #ccc;
+    stroke: none;
+}
+
+
     </style>
     <script>
+        
         (function () {
             // 1. 读取配置
             var isDark = localStorage.getItem('neural_lite_theme') === 'dark' ||
@@ -1195,6 +1302,7 @@
 
 <body class="preload">
     <script>
+        
         (function() {
             // 1. 读取配置
             var isDark = localStorage.getItem('neural_lite_theme') === 'dark' ||
@@ -1233,7 +1341,7 @@
             <div class="message-row">
                 <div class="avatar ai-avatar">AI</div>
                 <div class="bubble ai-bubble">
-                    你好！我是基于<b>模糊匹配算法</b>的本地 AI。<br>
+                    你好！我是基于模糊匹配算法的本地 AI。<br>
                     <br>
                     试试问我：
                     <ul>
@@ -1246,11 +1354,20 @@
         </div>
         <div class="input-wrapper">
             <div class="input-box">
-                <input type="search" id="user-input" maxlength="200" placeholder="在此输入消息..." autocomplete="off"
-                    autocorrect="off" autocapitalize="off" spellcheck="false" name="keyword_search"
-                    onkeypress="handleEnter(event)">
-                <button id="send-btn" class="primary">发送</button>
+    <div style="position: relative; flex: 1; display: flex; align-items: center;">
+        <input type="search" id="user-input" maxlength="200" placeholder="在此输入消息..." autocomplete="off"
+            onkeypress="handleEnter(event)">
+        
+        <div id="emoji-btn" onclick="toggleEmojiPanel(event)" style="position: absolute; right: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; opacity: 0.5; transition: opacity 0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=0.5">
+            <svg width="8" height="6" viewBox="0 0 8 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 6L0.535898 0.75L7.4641 0.75L4 6Z" fill="#333"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+        </div>
+
+        <div id="emoji-panel" style="display: none; position: absolute; bottom: 40px; right: 0; width: 220px; background: #ececec; border: 1px solid #999; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 1000; padding: 10px; grid-template-columns: repeat(6, 1fr); gap: 5px;">
             </div>
+    </div>
+    <button id="send-btn" class="primary">发送</button>
+</div>
         </div>
     </div>
     <script>
