@@ -766,24 +766,39 @@
                 font-size: 16px;
             }
 
-           /* 5. 关键：手机端输入框本体拉高、变胖，优化触控体验 */
+            /* 5. 关键：手机端输入框本体拉高、变胖，优化触控体验 */
             input {
-                font-size: 16px; /* 保持 16px，防止 iOS Safari 自动放大页面 */
-                padding: 10px 12px; /* 🌟 核心修改：大幅增加输入框上下的内边距，把输入框彻底撑高 */
-                border-radius: 5px; /* 手机端稍微增加一点圆角，更贴合手指点击直觉 */
+                font-size: 16px;
+                /* 保持 16px，防止 iOS Safari 自动放大页面 */
+                padding: 10px 12px;
+                /* 🌟 核心修改：大幅增加输入框上下的内边距，把输入框彻底撑高 */
+                border-radius: 5px;
+                /* 手机端稍微增加一点圆角，更贴合手指点击直觉 */
             }
 
             /* 6. 输入区域底座适配：同步拉高整个金属底板 */
             .input-wrapper {
-                padding: 12px 10px; /* 🌟 核心修改：增加底板与输入框之间的上下间距 */
-                height: 42px; /* 🌟 核心修改：强制拉高底板的高度（原全局为 30px） */
+                padding: 12px 10px;
+                /* 🌟 核心修改：增加底板与输入框之间的上下间距 */
+                height: 42px;
+                /* 🌟 核心修改：强制拉高底板的高度（原全局为 30px） */
             }
 
             /* 7. 顺便将手机端的发送按钮也拉高，匹配变高的输入框 */
             .input-box button {
-                height: 38px !important; /* 让按钮变高，不再是细长条 */
+                height: 38px !important;
                 border-radius: 6px !important;
-                font-size: 14px !important; /* 字号稍微放大一点，更加协调 */
+                font-size: 14px !important;
+
+                /* 🌟 核心修复：防止发送按钮被挤压导致文字竖排 */
+                flex-shrink: 0 !important;
+                /* 拒绝被左侧输入框挤压变形 */
+                white-space: nowrap !important;
+                /* 强制内部文字横向单行显示，绝不换行 */
+                min-width: 64px !important;
+                /* 给定一个基础宽度，确保放得下两个字 */
+                padding: 0 12px !important;
+                /* 手机上稍微缩小一点左右边距，节省空间 */
             }
 
             /* 隐藏非必要的装饰，比如窗口控制红绿灯按钮在手机上没用 */
