@@ -107,6 +107,16 @@
             position: relative;
             user-select: none;
             -webkit-user-select: none;
+            position: relative;
+            z-index: 10;
+            /* 保证标题栏永远压在气泡上方 */
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                /* 标题栏原本自带的高光，保留 */
+                0 1px 2px rgba(0, 0, 0, 0.4),
+                /* 原来的锋利刻痕线（现在掉在了气泡上） */
+                0 8px 20px -5px rgba(0, 0, 0, 0.25);
+            /* 原来的大面积深入感阴影 */
         }
 
         .header h1 {
@@ -228,8 +238,12 @@
             display: flex;
             flex-direction: column;
             gap: 17px;
-            background: #ebeef3;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+            background-color: #fbf9f9;
+            box-shadow:
+                inset 12px 0 15px -10px rgba(0, 0, 0, 0.25),
+                /* 左侧深坑边缘 */
+                inset -12px 0 15px -10px rgba(0, 0, 0, 0.25);
+            /* 右侧深坑边缘 */
             scroll-behavior: smooth;
             scrollbar-gutter: stable;
             /* 关键：开启平滑滚动 */
@@ -311,6 +325,10 @@
             overflow: hidden;
             /* 裁剪内部的高光层 */
             z-index: 1;
+            /* === 新增：让中文标点符号挤压成半格/比例宽度 === */
+            font-feature-settings: "palt" 1;
+            -webkit-font-feature-settings: "palt" 1;
+            /* 兼容旧版 Safari/iOS */
         }
 
         /* 核心：添加 Aqua 风格的玻璃反光层 (Glassy Gloss) */
@@ -330,6 +348,46 @@
             /* 匹配气泡顶部的圆角 */
             pointer-events: none;
             /* 确保不影响文字选择 */
+        }
+
+        /* =========================================
+   新增：时间分割线样式
+   ========================================= */
+        .time-divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #888;
+            font-size: 11px;
+            font-weight: bold;
+            margin: 10px 0;
+            width: 100%;
+        }
+
+        .time-divider::before,
+        .time-divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #d0d0d0f4;
+            /* 浅色模式线条颜色 */
+        }
+
+        .time-divider::before {
+            margin-right: 15px;
+        }
+
+        .time-divider::after {
+            margin-left: 15px;
+        }
+
+        /* 暗色模式适配 */
+        body.dark-mode .time-divider {
+            color: #666;
+        }
+
+        body.dark-mode .time-divider::before,
+        body.dark-mode .time-divider::after {
+            border-bottom: 1px solid #333;
         }
 
         /* AI 气泡 - 替换为 Aqua 石墨灰玻璃风格 */
@@ -401,6 +459,9 @@
             height: 30px;
             flex-shrink: 0;
             position: relative;
+            position: relative;
+            z-index: 10;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
         }
 
         /* 6. 底部输入区：深色金属 (暗色模式同步稍微加深) */
@@ -442,7 +503,7 @@
         }
 
         .input-box {
-            width: 96%;
+            width: 95%;
             /* 控制输入框的总体宽度，可以根据喜好修改为 70% 或 80% */
             max-width: 10000px;
             /* 设置一个最大宽度，防止在大屏幕上太长 */
@@ -456,11 +517,11 @@
         /* 搜索框风格输入框 */
         input {
             flex: 1;
-            background: #fff;
+            background: #fefbfb;
             border: 1px solid #777;
             border-bottom-color: #999;
             color: #333;
-            padding: 4px 12px;
+            padding: 4.3px 12px;
             border-radius: 3px;
             outline: none;
             font-size: 13px;
@@ -1100,7 +1161,7 @@
 
         /* 3. 聊天区域：暗色背景 */
         body.dark-mode #chat-container {
-            background: #1e1e1e;
+            background: #3e3e3e00;
             box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
         }
 
@@ -1132,7 +1193,7 @@
             */
             background-image:
                 radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(to bottom, #333333 0%, #1a1a1a 100%);
+                linear-gradient(to bottom, #363636 0%, #212121 100%);
             /* 让颗粒感密集一点 */
             background-size: 3px 3px, 100% 100%;
             /* === 物理厚度光影 ===
@@ -1487,6 +1548,127 @@
             z-index: 100;
             background: transparent;
             /* 保持透明，视觉效果继续由原来的 ::after 提供 */
+        }
+
+        /* =========================================
+   新增：红绿灯悬停图标 (Mac 样式)
+   ========================================= */
+        .win-btn::before {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* 初始状态隐藏 */
+            opacity: 0;
+            transition: opacity 0.15s ease-in-out;
+            color: rgba(0, 0, 0, 0.55);
+            font-family: system-ui, -apple-system, sans-serif;
+            font-weight: 900;
+            z-index: 10;
+            /* 关键：让图标不阻挡鼠标事件，避免闪烁或点不到按钮 */
+            pointer-events: none;
+        }
+
+        /* 当鼠标悬停在整个控制区时，所有按钮一起显示图标 */
+        .window-controls:hover .win-btn::before {
+            opacity: 1;
+        }
+
+        /* 红色关闭：叉号 */
+        .close::before {
+            content: '\00D7';
+            /* 字符 × */
+            font-size: 10px;
+        }
+
+        /* 黄色最小化：减号 */
+        .min::before {
+            content: '\2212';
+            /* 字符 − */
+            font-size: 10px;
+        }
+
+        /* 绿色最大化：加号 */
+        .max::before {
+            content: '\002B';
+            /* 字符 + */
+            font-size: 11px;
+        }
+
+        /* 暗色模式适配：由于你的暗色模式按钮颜色较深，这里加深图标的透明度增强对比 */
+        body.dark-mode .win-btn::before {
+            color: rgba(0, 0, 0, 0.85);
+        }
+
+        /* =========================================
+   新增：AI 正在输入动画 (Typing Indicator)
+   ========================================= */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            height: 18px;
+            /* 给定固定高度，确保在气泡中垂直居中 */
+            padding: 0 8px;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background-color: #666;
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite ease-in-out both;
+        }
+
+        /* 依次延迟，形成波浪效果 */
+        .typing-dot:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0s;
+        }
+
+        @keyframes typingBounce {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
+            }
+
+            40% {
+                transform: scale(1);
+            }
+        }
+
+        /* 暗色模式适配：将点变亮 */
+        body.dark-mode .typing-dot {
+            background-color: #ccc;
+        }
+
+        /* =========================================
+   新增：气泡文字展开时的淡入动画
+   ========================================= */
+        @keyframes textFadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(3px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
     <script>
@@ -2815,22 +2997,32 @@
         async function sendMessage() {
             const text = userInput.value.trim();
             if (!text) return;
-            // 🔊 播放发送音效
+
+            // 🔊 1. 瞬间播放“发送”音效
             playSound('sent');
-            // 1. 显示用户气泡
+
+            // 2. 瞬间显示用户的消息气泡
             addBubble(text, 'user');
             userInput.value = '';
+
             // 更新状态栏
             statusDiv.innerText = `当前索引数量: ${brain.db.length}`;
-            // 2. 模拟思考延迟 (如果你加了之前的“正在输入”动画，这里保留，没加也不影响)
-            // const loadingId = addTypingBubble(); // 如果没加动画，把这行注释掉
-            // 获取回复
-            const replyText = await brain.process(text);
-            // 简单延迟模拟
-            setTimeout(() => {
-                // if (loadingId) removeBubble(loadingId); // 如果没加动画，把这行注释掉
-                addBubble(replyText, 'ai');
-            }, 500); // 延迟 0.5秒
+
+            // 🌟 核心修复：给 AI 加上 400 毫秒的“反射弧”延迟
+            // 这样不仅完美错开了两个音效，也更符合真实的聊天节奏
+            setTimeout(async () => {
+                // 3. 400毫秒后，弹出“正在输入”气泡（此时会播放 recv 音效）
+                const typingId = addTypingBubble();
+
+                // 获取回复 
+                const replyText = await brain.process(text);
+
+                // 4. 再等 900 毫秒，AI 思考完毕，把点点点换成文字
+                setTimeout(() => {
+                    updateTypingBubble(typingId, replyText);
+                }, 900);
+
+            }, 670); // <--- 控制发送和收到气泡之间的间隔时间
         }
         function escapeHTML(str) {
             return str.replace(/[&<>'"]/g,
@@ -2995,29 +3187,112 @@
                 });
         })();
         // =========================================
-        // 💾 聊天记录持久化系统
+        // 💾 聊天记录持久化系统 & 时间线逻辑
         // =========================================
-        // 1. 保存一条新消息
-        function saveChatLog(text, role) {
-            // 获取现有的记录（如果没有就是空数组）
+
+        // 1. 全局变量，记录上一条消息的时间戳
+        let lastMessageTime = 0;
+
+        // 2. 格式化时间为 AM/PM 格式 (例如 5:38 PM)
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            let hours = date.getHours();
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // 将 0 点转换为 12
+            return `${hours}:${minutes} ${ampm}`;
+        }
+
+        // 3. 插入时间线 DOM
+        function insertTimeDivider(timestamp) {
+            const chatBox = document.getElementById('chat-container');
+            const divider = document.createElement('div');
+            divider.className = 'time-divider';
+            divider.textContent = formatTime(timestamp);
+            chatBox.appendChild(divider);
+        }
+
+        // 4. 保存一条新消息 (加入了时间戳参数)
+        function saveChatLog(text, role, timestamp) {
             let logs = JSON.parse(localStorage.getItem('chat_logs')) || [];
-            // 添加新消息
-            logs.push({ text: text, role: role });
-            // 存回去
+            logs.push({ text: text, role: role, timestamp: timestamp });
             localStorage.setItem('chat_logs', JSON.stringify(logs));
         }
-        // 2. 加载历史记录 (页面启动时调用)
+
+        // 5. 加载历史记录 (页面启动时调用)
         function loadChatHistory() {
             let logs = JSON.parse(localStorage.getItem('chat_logs')) || [];
-            // 如果有记录，先清空默认的欢迎语（可选，如果你想保留欢迎语就删掉下面这一行）
-            if (logs.length > 0) {
-                // chatBox.innerHTML = ''; 
+
+            // 如果没有任何历史记录，代表是全新开启，直接在初始 AI 消息下方插入当前的时间线
+            if (logs.length === 0) {
+                let now = Date.now();
+                insertTimeDivider(now);
+                lastMessageTime = now;
             }
+
             logs.forEach(log => {
-                // 第三个参数 true 表示这是历史记录，不播放音效，不重复保存
-                addBubble(log.text, log.role, true);
+                // 兼容旧数据：如果老的记录没有时间戳，则默认设为当前时间
+                let ts = log.timestamp || Date.now();
+                // 渲染气泡
+                addBubble(log.text, log.role, true, ts);
             });
         }
+
+        // 普通气泡添加 (修改：加入 timestamp 并在超过一分钟时插入时间线)
+        function addBubble(text, role, isHistory = false, timestamp = null) {
+            if (!timestamp) timestamp = Date.now();
+
+            // 如果距上一条消息超过 1 分钟（60000毫秒），或者这是通过代码添加的第一条动态消息
+            if (lastMessageTime === 0 || (timestamp - lastMessageTime > 60000)) {
+                insertTimeDivider(timestamp);
+            }
+            // 更新最后一条消息的时间
+            lastMessageTime = timestamp;
+
+            const row = document.createElement('div');
+            row.className = `message-row ${role}`;
+            if (role === 'ai' && !isHistory) {
+                if (typeof playSound === 'function') playSound('recv');
+            }
+            const avatarDiv = document.createElement('div');
+            avatarDiv.className = `avatar ${role}-avatar`;
+            avatarDiv.textContent = role === 'ai' ? 'AI' : 'Me';
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.className = `bubble ${role}-bubble`;
+
+            if (role === 'user') {
+                bubbleDiv.textContent = text;
+            } else {
+                let safeText = text
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+                let formatted = safeText.replace(/\n/g, '<br>');
+                formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+                bubbleDiv.innerHTML = formatted;
+            }
+
+            if (role === 'ai') {
+                row.appendChild(avatarDiv);
+                row.appendChild(bubbleDiv);
+            } else {
+                row.appendChild(bubbleDiv);
+                row.appendChild(avatarDiv);
+            }
+
+            const chatBox = document.getElementById('chat-container');
+            chatBox.appendChild(row);
+            scrollToBottom();
+
+            if (!isHistory) {
+                // 修改：保存记录时也要存入当前的时间戳
+                saveChatLog(text, role, timestamp);
+            }
+        }
+
         // ★★★ 启动时立即加载记录 ★★★
         loadChatHistory();
         // =========================================
@@ -3265,6 +3540,117 @@
                 frame.style.top = savedTop;
             }
         })();
+
+        // 1. 添加正在输入气泡 (为其分配专属 ID，并播放音效)
+        function addTypingBubble() {
+            const id = 'typing-' + Date.now();
+            const row = document.createElement('div');
+            row.className = 'message-row ai';
+            row.id = id;
+
+            // 气泡弹出的瞬间播放一次音效
+            if (typeof playSound === 'function') playSound('recv');
+
+            const avatarDiv = document.createElement('div');
+            avatarDiv.className = 'avatar ai-avatar';
+            avatarDiv.textContent = 'AI';
+
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.className = 'bubble ai-bubble';
+            bubbleDiv.id = id + '-bubble'; // 关键：给气泡本体加一个专属 ID，方便后续精准替换
+
+            // 插入三个跳动的小圆点
+            bubbleDiv.innerHTML = `
+        <div class="typing-indicator">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+        </div>
+    `;
+
+            row.appendChild(avatarDiv);
+            row.appendChild(bubbleDiv);
+
+            const chatBox = document.getElementById('chat-container');
+            chatBox.appendChild(row);
+            scrollToBottom();
+
+            return id; // 返回外层行的 ID
+        }
+
+        // 2. 无缝替换内容（终极防抖伸缩版）
+        function updateTypingBubble(rowId, text) {
+            const bubbleDiv = document.getElementById(rowId + '-bubble');
+            if (!bubbleDiv) return;
+
+            // 1. 安全转义和格式化
+            let safeText = text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+            let formatted = safeText.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+
+            // 2. 记录刚开始（三个点时）的宽高
+            const startWidth = bubbleDiv.offsetWidth;
+            const startHeight = bubbleDiv.offsetHeight;
+
+            // 3. 原地测量法：先把文字塞进去，不加动画，让浏览器按真实情况排版
+            bubbleDiv.style.transition = 'none';
+            bubbleDiv.style.width = 'auto';
+            bubbleDiv.style.height = 'auto';
+            bubbleDiv.innerHTML = formatted; // 纯文字先塞进去测
+
+            // 获取真实的、受到最大宽度 70% 约束后的正确尺寸
+            const finalWidth = bubbleDiv.offsetWidth;
+            const finalHeight = bubbleDiv.offsetHeight;
+
+            // 🌟 核心防跳动秘籍：计算气泡内部文字区的净宽度
+            const computedStyle = window.getComputedStyle(bubbleDiv);
+            const paddingX = parseFloat(computedStyle.paddingLeft) + parseFloat(computedStyle.paddingRight);
+            const innerWidth = finalWidth - paddingX;
+
+            // 重新用一个内部 div 包裹文字，并强行锁死宽度，防止动画期间文字不断换行跳动
+            const finalHTML = `<div style="width: ${innerWidth}px; animation: textFadeIn 0.3s ease forwards; opacity: 0;">${formatted}</div>`;
+
+            // 4. 时光倒流：强制把气泡缩回三个点的大小
+            bubbleDiv.style.boxSizing = 'border-box';
+            bubbleDiv.style.width = startWidth + 'px';
+            bubbleDiv.style.height = startHeight + 'px';
+            bubbleDiv.style.overflow = 'hidden'; // 隐藏内部那坨巨大的锁死宽度的文字
+            bubbleDiv.innerHTML = finalHTML; // 把带有动画和锁死宽度的内容放进去
+
+            // 5. 强制浏览器重绘，让刚才的“时光倒流”立即生效
+            void bubbleDiv.offsetWidth;
+
+            // 6. 开启伸缩动画，拉伸到测量好的真实大小！
+            bubbleDiv.style.transition = 'width 0.3s cubic-bezier(0.25, 1, 0.5, 1), height 0.3s cubic-bezier(0.25, 1, 0.5, 1)';
+            bubbleDiv.style.width = finalWidth + 'px';
+            bubbleDiv.style.height = finalHeight + 'px';
+
+            scrollToBottom(); // 动画开始时滚一下
+
+            // 7. 动画结束后 (300ms)，清理战场，把控制权还给 CSS 的 auto
+            setTimeout(() => {
+                bubbleDiv.style.transition = '';
+                bubbleDiv.style.width = '';
+                bubbleDiv.style.height = '';
+                bubbleDiv.style.overflow = '';
+                bubbleDiv.style.boxSizing = '';
+
+                // 顺便把内部 div 的锁死宽度也解除，以防后续窗口大小改变导致文字溢出
+                const innerDiv = bubbleDiv.querySelector('div');
+                if (innerDiv) innerDiv.style.width = '';
+
+                scrollToBottom();
+            }, 300);
+
+            // 更新记录和时间
+            const timestamp = Date.now();
+            lastMessageTime = timestamp;
+            saveChatLog(text, 'ai', timestamp);
+        }
     </script>
     <div id="custom-modal" class="modal-overlay">
         <div class="modal-window">
