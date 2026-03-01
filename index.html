@@ -48,8 +48,8 @@
         /* 模拟 OS X 窗口 */
         .window-frame {
             width: 100%;
-            max-width: 700px;
-            height: 77vh;
+            max-width: 650px;
+            height: 75vh;
             background: #ececec;
             border-radius: 5px 5px 3px 3px;
             box-shadow:
@@ -61,22 +61,52 @@
             position: relative;
         }
 
-        /* 顶部标题栏 (Brushed Metal / Gradient) */
+        /* =========================================
+           经典 OS X 顶部金属质感栏 (扁平化 + 深边框版)
+           弹窗顶部
+           ========================================= */
+        .modal-header {
+            /* 缩小首尾的色值跨度，削弱立体的弧面反光感，使金属面板看起来更平整 */
+            background: linear-gradient(to bottom,
+                    #d8d8d8 0%,
+                    /* 顶部高光压暗，去除凸起感 */
+                    #cccccc 30%,
+                    #b3b3b3 70%,
+                    #9f9f9f 100%
+                    /* 底部最暗处微微提亮，使其平缓 */
+                );
+            height: 16px;
+            border-bottom: 1px solid #333;
+            /* 🌟 核心修改：底部边框颜色大幅加深（原为 #555） */
+            /* 顶部白线透明度降到极低 0.1，进一步削弱 3D 边缘感 */
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            width: 100%;
+            flex-shrink: 0;
+            border-radius: 4px 4px 0 0;
+        }
+
+        /* =========================================
+           顶部标题栏 (主窗口 - 同步扁平与深边框)
+           ========================================= */
         .header {
-            background: linear-gradient(to bottom, #e6e6e6 0%, #d0d0d0 50%, #b8b8b8 51%, #c0c0c0 100%);
+            background: linear-gradient(to bottom,
+                    #d8d8d8 0%,
+                    #cccccc 30%,
+                    #b3b3b3 70%,
+                    #9f9f9f 100%);
             padding: 0 15px;
             height: 31px;
-            border-bottom: 1px solid #555;
+            border-bottom: 1px solid #333;
+            /* 🌟 核心修改：边框同步加深 */
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
             flex-shrink: 0;
             cursor: default;
             position: relative;
             user-select: none;
             -webkit-user-select: none;
-            /* 兼容 Safari/Chrome */
         }
 
         .header h1 {
@@ -357,18 +387,28 @@
             /* 文字凹陷效果 */
         }
 
-        /* 底部输入区 - 金属质感 */
+        /* 底部输入区 - 金属质感 (稍微加深版) */
         .input-wrapper {
-            background: linear-gradient(to bottom, #dcdcdc 0%, #b0b0b0 100%);
+            /* 🌟 核心修改：起点从 #dcdcdc 压暗到 #d0d0d0，终点从 #b0b0b0 压暗到 #a4a4a4 */
+            background: linear-gradient(to bottom, #d0d0d0 0%, #a4a4a4 100%);
             padding: 10px 15px;
-            border-top: 1px solid #888;
+            border-top: 1px solid #777;
+            /* 配合底色变深，把顶部的分割线从 #888 加深到 #777 */
             display: flex;
             align-items: center;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+            /* 顶部边缘的白光稍微调弱一点，防止显得太刺眼 */
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
             height: 30px;
             flex-shrink: 0;
             position: relative;
-            /* 新增这一行 */
+        }
+
+        /* 6. 底部输入区：深色金属 (暗色模式同步稍微加深) */
+        body.dark-mode .input-wrapper {
+            /* 起点从 #444 压暗到 #3a3a3a，终点从 #2a2a2a 压暗到 #222 */
+            background: linear-gradient(to bottom, #3a3a3a 0%, #222222 100%);
+            border-top: 1px solid #0d0d0d;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
 
         /* 新增：Aqua 右下角精准拖拽柄 (纯手工 3 条线版) */
