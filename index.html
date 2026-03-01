@@ -48,7 +48,7 @@
         /* 模拟 OS X 窗口 */
         .window-frame {
             width: 100%;
-            max-width: 720px;
+            max-width: 700px;
             height: 77vh;
             background: #ececec;
             border-radius: 5px 5px 3px 3px;
@@ -123,9 +123,12 @@
             border: 1px solid rgba(0, 0, 0, 0.25);
             /* 2. 核心立体光影：外部下拉投影 + 内部顶部压暗 + 内部底部高光透光 */
             box-shadow:
-                0 1px 2px rgba(0, 0, 0, 0.25),                 /* 外部轻微投影 */
-                inset 0 2px 4px rgba(0, 0, 0, 0.35),           /* 内部顶部暗角，制造球体纵深 */
-                inset 0 -3px 4px rgba(255, 255, 255, 0.7);     /* 内部底部强烈反光 (晶莹剔透感) */
+                0 1px 2px rgba(0, 0, 0, 0.25),
+                /* 外部轻微投影 */
+                inset 0 2px 4px rgba(0, 0, 0, 0.35),
+                /* 内部顶部暗角，制造球体纵深 */
+                inset 0 -3px 4px rgba(255, 255, 255, 0.7);
+            /* 内部底部强烈反光 (晶莹剔透感) */
         }
 
         /* 3. 标志性的“玻璃反光”高光 - 锐利的顶部弧形 */
@@ -163,8 +166,8 @@
             background: radial-gradient(circle at 50% 85%, #a9f274 0%, #3cc706 45%, #105c00 90%);
             border: 1px solid #114a02;
         }
-        
-        
+
+
         /* 状态栏文字样式保持不变，微调阴影增强凹陷感 */
         .status {
             /* 1. 颜色字体保持不变 */
@@ -191,7 +194,7 @@
             flex: 1;
             overflow-y: auto;
             /* 恢复自动滚动条 */
-            padding: 18.5px;
+            padding: 18.5px 6.5px 18.5px 18.5px;
             display: flex;
             flex-direction: column;
             gap: 17px;
@@ -364,44 +367,47 @@
             box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
             height: 30px;
             flex-shrink: 0;
-            position: relative; /* 新增这一行 */
+            position: relative;
+            /* 新增这一行 */
         }
+
         /* 新增：Aqua 右下角精准拖拽柄 (纯手工 3 条线版) */
-.input-wrapper::after {
-    content: '';
-    position: absolute;
-    bottom: 3px;
-    right: 3px;
-    width: 14px;
-    height: 14px;
-    /* 135度从左上到右下。前半截透明，只在右下角画三条线，自然形成三角形 */
-    background-image: linear-gradient(
-        135deg,
-        transparent 0px, transparent 10px,
+        .input-wrapper::after {
+            content: '';
+            position: absolute;
+            bottom: 3px;
+            right: 3px;
+            width: 14px;
+            height: 14px;
+            /* 135度从左上到右下。前半截透明，只在右下角画三条线，自然形成三角形 */
+            background-image: linear-gradient(135deg,
+                    transparent 0px, transparent 10px,
 
-        /* 第 1 条线（最内侧，最长） */
-        rgba(0, 0, 0, 0.4) 10px, rgba(0, 0, 0, 0.4) 11px,
-        rgba(255, 255, 255, 0.9) 11px, rgba(255, 255, 255, 0.9) 12px,
+                    /* 第 1 条线（最内侧，最长） */
+                    rgba(0, 0, 0, 0.4) 10px, rgba(0, 0, 0, 0.4) 11px,
+                    rgba(255, 255, 255, 0.9) 11px, rgba(255, 255, 255, 0.9) 12px,
 
-        transparent 12px, transparent 14px,
+                    transparent 12px, transparent 14px,
 
-        /* 第 2 条线（居中，稍短） */
-        rgba(0, 0, 0, 0.4) 14px, rgba(0, 0, 0, 0.4) 15px,
-        rgba(255, 255, 255, 0.9) 15px, rgba(255, 255, 255, 0.9) 16px,
+                    /* 第 2 条线（居中，稍短） */
+                    rgba(0, 0, 0, 0.4) 14px, rgba(0, 0, 0, 0.4) 15px,
+                    rgba(255, 255, 255, 0.9) 15px, rgba(255, 255, 255, 0.9) 16px,
 
-        transparent 16px, transparent 18px,
+                    transparent 16px, transparent 18px,
 
-        /* 第 3 条线（最角落，最短的点缀） */
-        rgba(0, 0, 0, 0.4) 18px, rgba(0, 0, 0, 0.4) 19px,
-        rgba(255, 255, 255, 0.9) 19px, rgba(255, 255, 255, 0.9) 20px
-    );
-    pointer-events: none;
-}
+                    /* 第 3 条线（最角落，最短的点缀） */
+                    rgba(0, 0, 0, 0.4) 18px, rgba(0, 0, 0, 0.4) 19px,
+                    rgba(255, 255, 255, 0.9) 19px, rgba(255, 255, 255, 0.9) 20px);
+            pointer-events: none;
+        }
 
-       .input-box {
-            width: 96%; /* 控制输入框的总体宽度，可以根据喜好修改为 70% 或 80% */
-            max-width: 10000px; /* 设置一个最大宽度，防止在大屏幕上太长 */
-            margin: 0 auto; /* 核心：让缩短后的输入框在底部完美居中 */
+        .input-box {
+            width: 96%;
+            /* 控制输入框的总体宽度，可以根据喜好修改为 70% 或 80% */
+            max-width: 10000px;
+            /* 设置一个最大宽度，防止在大屏幕上太长 */
+            margin: 0 auto;
+            /* 核心：让缩短后的输入框在底部完美居中 */
             display: flex;
             gap: 10px;
             align-items: center;
@@ -415,7 +421,7 @@
             border-bottom-color: #999;
             color: #333;
             padding: 4px 12px;
-            border-radius: 50px;
+            border-radius: 3px;
             outline: none;
             font-size: 13px;
             box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.5);
@@ -737,7 +743,7 @@
         }
 
         /* =========================================
-           自定义模态弹窗 (Custom Modal)
+           自定义模态弹窗 (Custom Modal) - 经典 OS X Alert 风格
            ========================================= */
         .modal-overlay {
             position: fixed;
@@ -746,55 +752,171 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.4);
-            /* 半透明遮罩 */
             backdrop-filter: blur(2px);
-            /* 背景模糊效果 */
             z-index: 9999;
             display: none;
-            /* 默认隐藏 */
             align-items: center;
             justify-content: center;
         }
 
-        /* 复用 window-frame 样式，但做微调 */
         .modal-window {
-            width: 300px;
+            width: 420px;
             height: auto;
             max-width: 90%;
             background: #ececec;
             border-radius: 5px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(0, 0, 0, 0.2);
             display: flex;
             flex-direction: column;
             overflow: hidden;
             animation: aquaPop 0.2s cubic-bezier(0.15, 1, 0.5, 1);
         }
 
-        .modal-content {
-            padding: 15px 20px 15px 20px;
-            /* 上15px, 右20px, 下10px, 左20px */
-            text-align: center;
-            font-size: 13px;
-            /* 字体稍微改小一号更精致 */
+        /* =========================================
+           经典 OS X 顶部金属质感栏 (高对比度柔和版)
+           ========================================= */
+        .modal-header {
+            /* 对比更强烈，但过渡极其平滑的拉丝铝合金质感：
+               顶部纯白受光，平缓滑落到灰白，底部压暗以托住边框。
+            */
+            background: linear-gradient(to bottom,
+                    #ffffff 0%,
+                    /* 顶部极亮，形成受光面 */
+                    #eeeeee 25%,
+                    /* 迅速但柔和地过渡到浅灰 */
+                    #d4d4d4 70%,
+                    /* 中下部持续加深，拉开对比度 */
+                    #b5b5b5 100%
+                    /* 底部明显压暗，增强圆润的立体感 */
+                );
+            height: 21px;
+            border-bottom: 1px solid #666;
+            /* 边框跟着稍微加深一点，压住暗部 */
+            /* 顶部保留极细的锐利白边，增加金属切割的锋利感 */
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            width: 100%;
+            flex-shrink: 0;
+            border-radius: 4px 4px 0 0;
+        }
+
+        /* =========================================
+           暗色模式下的金属条 (同步增强对比度)
+           ========================================= */
+        body.dark-mode .modal-header {
+            background: linear-gradient(to bottom,
+                    #5a5a5a 0%,
+                    /* 顶部提亮 */
+                    #3d3d3d 40%,
+                    /* 中部柔和过渡 */
+                    #262626 100%
+                    /* 底部深陷 */
+                );
+            border-bottom: 1px solid #000;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .modal-body {
+            display: flex;
+            padding: 17px 25px;
+            gap: 15px;
+        }
+
+        /* 左侧警告图标 */
+        .modal-icon {
+            width: 55px;
+            height: 55px;
+            flex-shrink: 0;
+            filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.2));
+        }
+
+        /* 右侧文字区，左对齐 */
+        .modal-text {
+            flex: 1;
+            text-align: left;
             color: #333;
             line-height: 1.4;
         }
 
+        .modal-text h2 {
+            font-size: 14px;
+            font-weight: bold;
+            margin: 0 0 8px 0;
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+        }
+
+        .modal-text p {
+            margin: 0;
+            font-size: 11px;
+        }
+
+        /* =========================================
+           底部按钮区 - 经典小圆角方形按钮
+           ========================================= */
         .modal-buttons {
             display: flex;
-            justify-content: center;
-            gap: 15px;
-            padding: 0 20px 15px 20px;
-            /* 底部留白减少到 15px */
+            justify-content: flex-end;
+            gap: 12px;
+            padding: 0 25px 18px 25px;
         }
 
-        /* 专门给取消按钮用的样式 */
+        /* 覆盖全局的 15px 药丸形圆角，改为经典的方形带小圆角 */
+        .modal-buttons button {
+            min-width: 88px;
+            height: 23px;
+            border-radius: 4px !important;
+            /* 关键：方形小圆角 */
+            padding: 0 15px !important;
+            font-size: 12.3px;
+        }
+
+        /* 次要按钮 (Use .gif 风格 - 灰色金属) */
         button.secondary {
-            background: linear-gradient(to bottom, #f9f9f9 0%, #dcdcdc 100%);
+            background: linear-gradient(to bottom, #ffffff 0%, #f0f0f0 45%, #e0e0e0 55%, #f4f4f4 100%);
+            border: 1px solid #888;
+            color: #333;
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1);
         }
 
-        .modal-window .win-btn.close:hover {
-            cursor: pointer;
+        /* 默认/主要按钮 (Keep .jpg 风格 - 经典 Aqua 蓝) */
+        .modal-buttons button.primary {
+            background: linear-gradient(to bottom,
+                    #95c5f5 0%,
+                    #75aef0 45%,
+                    #3484e6 55%,
+                    #78b1f2 100%) !important;
+            border: 1px solid #16569e !important;
+            color: #fff !important;
+            text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.3) !important;
+            /* 经典蓝色果冻投影 */
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.5) !important;
+        }
+
+        /* 主要按钮按下状态 */
+        .modal-buttons button.primary:active {
+            background: linear-gradient(to bottom, #267ce8 0%, #4e9af2 100%) !important;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.4) !important;
+        }
+
+        /* =========================================
+           针对弹窗的暗色模式 (Dark Mode) 适配
+           ========================================= */
+        body.dark-mode .modal-window {
+            background: #2b2b2b;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), 0 0 0 1px #000;
+        }
+
+        body.dark-mode .modal-header {
+            background: linear-gradient(to bottom, #444 0%, #333 100%);
+            border-bottom: 1px solid #111;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        }
+
+        body.dark-mode .modal-text {
+            color: #ddd;
+        }
+
+        body.dark-mode .modal-text h2 {
+            text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.8);
         }
 
         /* =========================================
@@ -1015,29 +1137,28 @@
             border-top: 1px solid #111;
             box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
         }
+
         /* 新增：暗色模式下的精准拖拽柄 */
-body.dark-mode .input-wrapper::after {
-    background-image: linear-gradient(
-        135deg,
-        transparent 0px, transparent 10px,
+        body.dark-mode .input-wrapper::after {
+            background-image: linear-gradient(135deg,
+                    transparent 0px, transparent 10px,
 
-        /* 第 1 条线 */
-        rgba(0, 0, 0, 0.8) 10px, rgba(0, 0, 0, 0.8) 11px,
-        rgba(255, 255, 255, 0.15) 11px, rgba(255, 255, 255, 0.15) 12px,
+                    /* 第 1 条线 */
+                    rgba(0, 0, 0, 0.8) 10px, rgba(0, 0, 0, 0.8) 11px,
+                    rgba(255, 255, 255, 0.15) 11px, rgba(255, 255, 255, 0.15) 12px,
 
-        transparent 12px, transparent 14px,
+                    transparent 12px, transparent 14px,
 
-        /* 第 2 条线 */
-        rgba(0, 0, 0, 0.8) 14px, rgba(0, 0, 0, 0.8) 15px,
-        rgba(255, 255, 255, 0.15) 15px, rgba(255, 255, 255, 0.15) 16px,
+                    /* 第 2 条线 */
+                    rgba(0, 0, 0, 0.8) 14px, rgba(0, 0, 0, 0.8) 15px,
+                    rgba(255, 255, 255, 0.15) 15px, rgba(255, 255, 255, 0.15) 16px,
 
-        transparent 16px, transparent 18px,
+                    transparent 16px, transparent 18px,
 
-        /* 第 3 条线 */
-        rgba(0, 0, 0, 0.8) 18px, rgba(0, 0, 0, 0.8) 19px,
-        rgba(255, 255, 255, 0.15) 19px, rgba(255, 255, 255, 0.15) 20px
-    );
-}
+                    /* 第 3 条线 */
+                    rgba(0, 0, 0, 0.8) 18px, rgba(0, 0, 0, 0.8) 19px,
+                    rgba(255, 255, 255, 0.15) 19px, rgba(255, 255, 255, 0.15) 20px);
+        }
 
         body.dark-mode input {
             background: #252525;
@@ -1234,63 +1355,82 @@ body.dark-mode .input-wrapper::after {
         }
 
         /* === 新增：大屏幕（iPad 和 电脑）隐藏发送按钮 === */
-@media screen and (min-width: 769px) {
-    #send-btn {
-        display: none !important; /* 隐藏按钮 */
-    }
-    
-    .input-box {
-        gap: 0; /* 既然没按钮了，去掉原本 10px 的间距 */
-    }
-    
-    .input-box input {
-        width: 100%; /* 确保输入框占满全宽 */
-    }
-}
+        @media screen and (min-width: 769px) {
+            #send-btn {
+                display: none !important;
+                /* 隐藏按钮 */
+            }
 
-/* 确保输入框右侧有足够的填充，不被图标遮挡 */
-#user-input {
-    padding-right: 45px !important;
-}
+            .input-box {
+                gap: 0;
+                /* 既然没按钮了，去掉原本 10px 的间距 */
+            }
 
-/* 拟物化表情按钮样式 */
-.emoji-item {
-    cursor: pointer;
-    font-size: 20px;
-    padding: 4px;
-    border-radius: 4px;
-    text-align: center;
-    transition: background 0.1s;
-}
-.emoji-item:hover {
-    background: rgba(0,0,0,0.1);
-}
+            .input-box input {
+                width: 100%;
+                /* 确保输入框占满全宽 */
+            }
+        }
 
-/* 暗色模式适配 */
-body.dark-mode #emoji-panel {
-    background: #2b2b2b;
-    border-color: #000;
-}
-body.dark-mode #emoji-btn svg path, 
-body.dark-mode #emoji-btn svg circle,
-body.dark-mode #emoji-btn svg line {
-    stroke: #ccc;
-    fill: none;
-}
-body.dark-mode #emoji-btn svg path[fill="#333"] {
-    fill: #ccc;
-    stroke: none;
-}
+        /* 确保输入框右侧有足够的填充，不被图标遮挡 */
+        #user-input {
+            padding-right: 45px !important;
+        }
 
+        /* 拟物化表情按钮样式 */
+        .emoji-item {
+            cursor: pointer;
+            font-size: 20px;
+            padding: 4px;
+            border-radius: 4px;
+            text-align: center;
+            transition: background 0.1s;
+        }
 
+        .emoji-item:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        /* 暗色模式适配 */
+        body.dark-mode #emoji-panel {
+            background: #2b2b2b;
+            border-color: #000;
+        }
+
+        body.dark-mode #emoji-btn svg path,
+        body.dark-mode #emoji-btn svg circle,
+        body.dark-mode #emoji-btn svg line {
+            stroke: #ccc;
+            fill: none;
+        }
+
+        body.dark-mode #emoji-btn svg path[fill="#333"] {
+            fill: #ccc;
+            stroke: none;
+        }
+
+        /* =========================================
+           新增：右下角拖拽拉伸窗口的交互区
+           ========================================= */
+        .resize-handle {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 20px;
+            height: 20px;
+            cursor: default;
+            z-index: 100;
+            background: transparent;
+            /* 保持透明，视觉效果继续由原来的 ::after 提供 */
+        }
     </style>
     <script>
-        
+
         (function () {
             // 1. 读取配置
             var isDark = localStorage.getItem('neural_lite_theme') === 'dark' ||
                 (!localStorage.getItem('neural_lite_theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
-            
+
             // 2. 如果是暗色，立刻在 DOM 渲染前强行注入样式
             // 关键：同时设置 html 和 body 背景为深色，防止任何缝隙露白
             if (isDark) {
@@ -1302,8 +1442,8 @@ body.dark-mode #emoji-btn svg path[fill="#333"] {
 
 <body class="preload">
     <script>
-        
-        (function() {
+
+        (function () {
             // 1. 读取配置
             var isDark = localStorage.getItem('neural_lite_theme') === 'dark' ||
                 (!localStorage.getItem('neural_lite_theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -1330,7 +1470,7 @@ body.dark-mode #emoji-btn svg path[fill="#333"] {
                 <script>
                     // 1. 在这里定义数据
                     var fixedKnowledge = [
-                        { "q": "今天星期几", "a": "今天是"+ ["周日", "周一", "周二", "周三", "周四", "周五", "周六"][new Date().getDay()] },
+                        { "q": "今天星期几", "a": "今天是" + ["周日", "周一", "周二", "周三", "周四", "周五", "周六"][new Date().getDay()] },
                     ];
                     // 2. 马上写出数量 (这一步是实时的，不会闪烁)
                     document.write("当前索引数量: " + fixedKnowledge.length);
@@ -1354,21 +1494,34 @@ body.dark-mode #emoji-btn svg path[fill="#333"] {
         </div>
         <div class="input-wrapper">
             <div class="input-box">
-    <div style="position: relative; flex: 1; display: flex; align-items: center;">
-        <input type="search" id="user-input" maxlength="200" placeholder="在此输入消息..." autocomplete="off"
-            onkeypress="handleEnter(event)">
-        
-        <div id="emoji-btn" onclick="toggleEmojiPanel(event)" style="position: absolute; right: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; opacity: 0.5; transition: opacity 0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=0.5">
-            <svg width="8" height="6" viewBox="0 0 8 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 6L0.535898 0.75L7.4641 0.75L4 6Z" fill="#333"/></svg>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
-        </div>
+                <div style="position: relative; flex: 1; display: flex; align-items: center;">
+                    <input type="search" id="user-input" maxlength="200" placeholder="在此输入消息..." autocomplete="off"
+                        onkeypress="handleEnter(event)">
 
-        <div id="emoji-panel" style="display: none; position: absolute; bottom: 40px; right: 0; width: 220px; background: #ececec; border: 1px solid #999; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 1000; padding: 10px; grid-template-columns: repeat(6, 1fr); gap: 5px;">
+                    <div id="emoji-btn" onclick="toggleEmojiPanel(event)"
+                        style="position: absolute; right: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; opacity: 0.5; transition: opacity 0.2s;"
+                        onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=0.5">
+                        <svg width="8" height="6" viewBox="0 0 8 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M4 6L0.535898 0.75L7.4641 0.75L4 6Z" fill="#333" />
+                        </svg>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+                            <line x1="9" y1="9" x2="9.01" y2="9" />
+                            <line x1="15" y1="9" x2="15.01" y2="9" />
+                        </svg>
+                    </div>
+
+                    <div id="emoji-panel"
+                        style="display: none; position: absolute; bottom: 40px; right: 0; width: 220px; background: #ececec; border: 1px solid #999; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 1000; padding: 10px; grid-template-columns: repeat(6, 1fr); gap: 5px;">
+                    </div>
+                </div>
+                <button id="send-btn" class="primary">发送</button>
             </div>
-    </div>
-    <button id="send-btn" class="primary">发送</button>
-</div>
+            <div class="resize-handle" title="拖拽调整大小"></div>
         </div>
+    </div>
     </div>
     <script>
         // =========================================================
@@ -1418,8 +1571,8 @@ body.dark-mode #emoji-btn svg path[fill="#333"] {
                             source.connect(silentGain);
                             silentGain.connect(audioCtx.destination);
                             source.start(0);
-                        } catch(e) {}
-                        
+                        } catch (e) { }
+
                         if (window.console && console.log) console.log(`✅ [音效] ${key} 预热完成`);
                     }, (err) => {
                         console.error(`❌ [音效] ${key} 解码失败`, err);
@@ -1428,10 +1581,10 @@ body.dark-mode #emoji-btn svg path[fill="#333"] {
                     console.error(`❌ [音效] ${key} 转换错误`, e);
                 }
             };
-            
+
             // ★★★ 调整顺序：优先解码发送音效，因为用户最先用到它 ★★★
             decode('sent', SENT_SOUND_DATA);
-            
+
             // 稍微延迟一点解码其他音效，让出 CPU 给主界面渲染
             setTimeout(() => {
                 decode('recv', RECV_SOUND_DATA);
@@ -2751,7 +2904,7 @@ body.dark-mode #emoji-btn svg path[fill="#333"] {
                 return false;
             }
         };
-        
+
     </script>
     <script>
         (function loadExternalBrain() {
@@ -2867,6 +3020,10 @@ body.dark-mode #emoji-btn svg path[fill="#333"] {
             setTimeout(() => {
                 location.reload();
             }, 300);
+            localStorage.removeItem('neural_lite_width');
+            localStorage.removeItem('neural_lite_height');
+            localStorage.removeItem('neural_lite_left');
+            localStorage.removeItem('neural_lite_top');
         }
         // =========================================
         // 🖱️ 物理拖拽系统 (终极版：防粘连 + 防文字误选)
@@ -2885,6 +3042,8 @@ body.dark-mode #emoji-btn svg path[fill="#333"] {
                 frame.style.boxShadow = '';
                 frame.style.cursor = 'default';
                 header.style.cursor = 'default';
+                localStorage.setItem('neural_lite_left', frame.style.left);
+                localStorage.setItem('neural_lite_top', frame.style.top);
             }
             header.addEventListener('mousedown', (e) => {
                 // 如果点的是按钮或标题文字，别拖动
@@ -2921,22 +3080,157 @@ body.dark-mode #emoji-btn svg path[fill="#333"] {
             document.addEventListener('mouseleave', stopDrag);
             window.addEventListener('blur', stopDrag);
         })();
+
+        // =========================================
+        // 📐 窗口拉伸调整大小系统 (Resize System)
+        // =========================================
+        (function makeResizable() {
+            const frame = document.querySelector('.window-frame');
+            const handle = document.querySelector('.resize-handle');
+            if (!handle || !frame) return;
+
+            let isResizing = false;
+            let startWidth, startHeight, startX, startY;
+
+            function startResize(e) {
+                // 手机端全屏模式不需要拉伸
+                if (window.innerWidth <= 768) return;
+                isResizing = true;
+
+                // 1. 获取当前精确坐标
+                const rect = frame.getBoundingClientRect();
+
+                // ==========================================
+                // ★ 核心修复：防抽搐！
+                // 在剥离最大宽度限制前，先用精确的像素值锁定当前宽高。
+                // 这样取消 max-width 时，它就不会瞬间撑满屏幕了。
+                // ==========================================
+                frame.style.width = rect.width + 'px';
+                frame.style.height = rect.height + 'px';
+
+                // 2. 将窗口强行改为绝对定位锁定左上角
+                frame.style.margin = '0';
+                frame.style.position = 'absolute';
+                frame.style.left = rect.left + 'px';
+                frame.style.top = rect.top + 'px';
+
+                // 3. 记录初始尺寸和鼠标位置
+                startWidth = rect.width;
+                startHeight = rect.height;
+                startX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+                startY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+
+                // 4. 解除原有的 CSS 最大宽高的限制，允许自由放大
+                frame.style.maxWidth = 'none';
+                frame.style.maxHeight = 'none';
+
+                // 防止拖拽时误选中文本
+                e.preventDefault();
+            }
+
+            function doResize(e) {
+                if (!isResizing) return;
+
+                const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+
+                // 计算新尺寸
+                const newWidth = startWidth + (clientX - startX);
+                const newHeight = startHeight + (clientY - startY);
+
+                // 限制一下最小宽高，防止把窗口缩成一条线
+                if (newWidth > 320) frame.style.width = newWidth + 'px';
+                if (newHeight > 300) frame.style.height = newHeight + 'px';
+
+                // 自动将聊天记录滚到底部，防止拉长时出现大片空白
+                const chatBox = document.getElementById('chat-container');
+                if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
+            }
+
+            function stopResize() {
+                // 如果没有在拖拽状态，就不执行
+                if (!isResizing) return;
+                isResizing = false;
+
+                // ★ 新增：拖拽结束后，把最终的宽高保存到浏览器本地
+                localStorage.setItem('neural_lite_width', frame.style.width);
+                localStorage.setItem('neural_lite_height', frame.style.height);
+            }
+            // 绑定鼠标事件 (电脑端)
+            handle.addEventListener('mousedown', startResize);
+            document.addEventListener('mousemove', doResize);
+            document.addEventListener('mouseup', stopResize);
+
+            // 绑定触摸事件 (iPad 等大屏触控设备)
+            handle.addEventListener('touchstart', startResize, { passive: false });
+            document.addEventListener('touchmove', doResize, { passive: false });
+            document.addEventListener('touchend', stopResize);
+        })();
+
+        // =========================================
+        // 💾 记忆与恢复窗口大小及位置系统
+        // =========================================
+        (function restoreWindowState() {
+            // 手机端是全屏，不需要恢复尺寸和位置
+            if (window.innerWidth <= 768) return;
+
+            const frame = document.querySelector('.window-frame');
+            if (!frame) return;
+
+            // 读取上次保存的宽高
+            const savedWidth = localStorage.getItem('neural_lite_width');
+            const savedHeight = localStorage.getItem('neural_lite_height');
+            // ★ 新增：读取上次保存的坐标位置
+            const savedLeft = localStorage.getItem('neural_lite_left');
+            const savedTop = localStorage.getItem('neural_lite_top');
+
+            // 如果有保存过的尺寸，应用尺寸
+            if (savedWidth && savedHeight) {
+                frame.style.maxWidth = 'none';
+                frame.style.maxHeight = 'none';
+                frame.style.width = savedWidth;
+                frame.style.height = savedHeight;
+            }
+
+            // ★ 新增：如果有保存过的位置，应用位置
+            if (savedLeft && savedTop) {
+                frame.style.margin = '0';
+                frame.style.position = 'absolute';
+                frame.style.left = savedLeft;
+                frame.style.top = savedTop;
+            }
+        })();
     </script>
     <div id="custom-modal" class="modal-overlay">
         <div class="modal-window">
-            <div class="header">
-                <div class="window-controls">
-                    <div class="win-btn close" onclick="closeModal()"></div>
+            <div class="modal-header"></div>
+
+            <div class="modal-body">
+                <div class="modal-icon">
+                    <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="alert-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#ffe138" />
+                                <stop offset="100%" stop-color="#f5a623" />
+                            </linearGradient>
+                            <filter id="alert-shadow" x="-10%" y="-10%" width="120%" height="120%">
+                                <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.3" />
+                            </filter>
+                        </defs>
+                        <path d="M32 4 L4 56 L60 56 Z" fill="url(#alert-grad)" filter="url(#alert-shadow)"
+                            stroke="#d68f00" stroke-width="1" />
+                        <path d="M32 22 L32 40" stroke="#fff" stroke-width="5" stroke-linecap="round"
+                            filter="drop-shadow(0 1px 1px rgba(0,0,0,0.2))" />
+                        <circle cx="32" cy="48" r="3" fill="#fff" filter="drop-shadow(0 1px 1px rgba(0,0,0,0.2))" />
+                    </svg>
                 </div>
-                <h1 style="margin:0;">System Alert</h1>
-                <div></div>
+
+                <div class="modal-text">
+                    <h2>确定要清除系统记忆吗？</h2>
+                    <p>如果执行此操作，所有聊天记录和 AI 记忆参数将被永久删除，您的文档和应用数据可能会受到影响。此操作无法撤销。</p>
+                </div>
             </div>
-            <div class="modal-content">
-                <p style="margin: 0;">
-                    <b>确定要清除记忆吗？</b>
-                    <br><span style="font-size: 0.9em; opacity: 0.8;">这将删除所有聊天记录，且无法恢复</span>
-                </p>
-            </div>
+
             <div class="modal-buttons">
                 <button class="secondary" onclick="closeModal()">取消</button>
                 <button class="primary" onclick="confirmResetAction()">清除</button>
