@@ -12,6 +12,7 @@ export async function onRequestPost(context) {
             }
         });
     }
+
     // 1. 获取前端传来的用户消息和历史记录
     const { request, env } = context;
     let body;
@@ -24,6 +25,46 @@ export async function onRequestPost(context) {
     const userMessage = body.message;
     const history = body.history || [];
 
+    // 获取访客的真实 IP
+    const clientIP = request.headers.get("CF-Connecting-IP") || "unknown-ip";
+
+    //  IP 黑名单拦截
+    const blockedIPsString = env.BLOCKED_IPS || ""; 
+    const blockedIPs = blockedIPsString.split(',').map(ip => ip.trim());
+
+    if (clientIP !== "unknown-ip" && blockedIPs.includes(clientIP)) {
+        return new Response(JSON.stringify({ 
+            reply: "🛑 **访问被拒绝**：你的 IP 地址已被管理员封禁，无法使用本服务。" 
+        }), { 
+            status: 403, 
+            headers: { 
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*" 
+            } 
+        });
+    }
+
+    if (context.env.CHAT_LOGS && clientIP !== "unknown-ip") {
+        const rateLimitKey = `rate_limit_${clientIP}`;
+        const lastRequestTime = await context.env.CHAT_LOGS.get(rateLimitKey);
+        const now = Date.now();
+
+        // 如果该 IP 之前访问过，且距离上次访问不足 10 秒（10000毫秒）
+        if (lastRequestTime && (now - parseInt(lastRequestTime)) < 10000) {
+            return new Response(JSON.stringify({
+                reply: "⏳ **触发防刷机制**：你的发言太快啦，CPU都冒烟了！请休息 10 秒钟再发吧~"
+            }), {
+                headers: { "Content-Type": "application/json" }
+            });
+        }
+
+        // 记录本次请求的时间戳。
+        // expirationTtl: 60 表示这条记录 60 秒后会自动从 KV 数据库删除，避免垃圾数据堆积。
+        context.waitUntil(
+            context.env.CHAT_LOGS.put(rateLimitKey, now.toString(), { expirationTtl: 60 })
+        );
+    }
+
     // ==========================================
     // 💾 新增：存入 KV 数据库，用于后期在后台查看
     // ==========================================
@@ -34,7 +75,7 @@ export async function onRequestPost(context) {
             historyLength: history.length, // 可选：看看他们聊了几个回合
             ip: request.headers.get("CF-Connecting-IP") // 可选：获取访客IP
         };
-        
+
         // 后台静默保存到数据库
         context.waitUntil(
             context.env.CHAT_LOGS.put(`log_${timeKey}`, JSON.stringify(logData))
