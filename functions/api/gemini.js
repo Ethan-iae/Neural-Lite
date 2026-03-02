@@ -25,6 +25,23 @@ export async function onRequestPost(context) {
     const history = body.history || [];
 
     // ==========================================
+    // 💾 新增：存入 KV 数据库，用于后期在后台查看
+    // ==========================================
+    if (context.env.CHAT_LOGS) {
+        const timeKey = new Date().toISOString(); // 生成当前时间作为标识
+        const logData = {
+            message: userMessage,
+            historyLength: history.length, // 可选：看看他们聊了几个回合
+            ip: request.headers.get("CF-Connecting-IP") // 可选：获取访客IP
+        };
+        
+        // 后台静默保存到数据库
+        context.waitUntil(
+            context.env.CHAT_LOGS.put(`log_${timeKey}`, JSON.stringify(logData))
+        );
+    }
+
+    // ==========================================
     // 🛡️ 第一重护盾：本地敏感词拦截网
     // ==========================================
     const sensitiveWords = [
