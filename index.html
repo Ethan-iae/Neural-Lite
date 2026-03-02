@@ -2386,19 +2386,32 @@
                     ]);
 
                     // ==========================================
-                    // 🚀 第一步：极速获取经纬度 (Open-Meteo)
+                    // 🚀 第一步：极速获取经纬度 (双引擎解析，专治中国小地名)
                     // ==========================================
-                    const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cleanCity)}&count=1&language=zh&format=json`;
-                    const geoRes = await fetchTimeout(geoUrl, 3000).then(r => r.json()).catch(() => null);
-
                     let lat = null, lng = null, resolvedCity = city;
-                    if (geoRes && geoRes.results && geoRes.results.length > 0) {
-                        lat = geoRes.results[0].latitude;
-                        lng = geoRes.results[0].longitude;
-                        // 如果查到了，顺便用官方标准地名
-                        resolvedCity = geoRes.results[0].name; 
+
+                    // 引擎 1：Open-Meteo 官方解析（速度极快，适合大中城市）
+                    const geoUrl1 = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cleanCity)}&count=1&language=zh&format=json`;
+                    const geoRes1 = await fetchTimeout(geoUrl1, 2000).then(r => r.json()).catch(() => null);
+
+                    if (geoRes1 && geoRes1.results && geoRes1.results.length > 0) {
+                        lat = geoRes1.results[0].latitude;
+                        lng = geoRes1.results[0].longitude;
+                        resolvedCity = geoRes1.results[0].name; 
                     } else {
-                        throw new Error("无法解析该城市的经纬度");
+                        // 引擎 2：OpenStreetMap 兜底解析（地图全，精确到小县城/区镇）
+                        console.log(`Open-Meteo 未找到 "${cleanCity}"，正在启用 OSM 地图引擎兜底...`);
+                        const geoUrl2 = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cleanCity)}&limit=1`;
+                        const geoRes2 = await fetchTimeout(geoUrl2, 3000).then(r => r.json()).catch(() => null);
+                        
+                        if (geoRes2 && geoRes2.length > 0) {
+                            lat = geoRes2[0].lat;
+                            lng = geoRes2[0].lon;
+                            // 小地方就直接用用户输入的名字，因为 OSM 返回的全称太长了(比如：xx省xx市xx县)
+                            resolvedCity = cleanCity; 
+                        } else {
+                            throw new Error("双引擎均无法解析该城市的经纬度");
+                        }
                     }
 
                     // ==========================================
