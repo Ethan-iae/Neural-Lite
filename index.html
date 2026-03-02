@@ -2447,13 +2447,19 @@
                     let lat = null, lng = null, resolvedCity = city;
 
                     // 引擎 1：Open-Meteo 官方解析（速度极快，适合大中城市）
-                    const geoUrl1 = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cleanCity)}&count=1&language=zh&format=json`;
+                    // 🌟 修改 1：将 count=1 改为 count=5，多获取几个同名地点
+                    const geoUrl1 = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cleanCity)}&count=5&language=zh&format=json`;
                     const geoRes1 = await fetchTimeout(geoUrl1, 2000).then(r => r.json()).catch(() => null);
 
                     if (geoRes1 && geoRes1.results && geoRes1.results.length > 0) {
-                        lat = geoRes1.results[0].latitude;
-                        lng = geoRes1.results[0].longitude;
-                        resolvedCity = geoRes1.results[0].name;
+                        // 🌟 修改 2：在这几个结果中，对比 population（人口）字段，挑出人口最多的那一个！
+                        const bestMatch = geoRes1.results.reduce((prev, current) => {
+                            return (prev.population || 0) > (current.population || 0) ? prev : current;
+                        });
+                        
+                        lat = bestMatch.latitude;
+                        lng = bestMatch.longitude;
+                        resolvedCity = bestMatch.name;
                     } else {
                         // 引擎 2：OpenStreetMap 兜底解析（地图全，精确到小县城/区镇）
                         console.log(`Open-Meteo 未找到 "${cleanCity}"，正在启用 OSM 地图引擎兜底...`);
