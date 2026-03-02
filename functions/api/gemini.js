@@ -1,4 +1,17 @@
 export async function onRequestPost(context) {
+    // 【新增】1. 读取 Cloudflare 环境变量，检查是否开启了维护模式
+    if (context.env.MAINTENANCE_MODE === "true") {
+        return new Response(JSON.stringify({
+            // 这里写你想要劝退的文案，支持你前端的 Markdown 格式
+            reply: "🚧 **系统升级维护中** 🚧\n\n抱歉，目前我的云端神经元正在进行休眠升级，暂时无法提供服务啦。大家先散了吧，等站长弄好了我再回来！"
+        }), {
+            headers: { 
+                "Content-Type": "application/json",
+                // 解决跨域问题（如果有的话）
+                "Access-Control-Allow-Origin": "*" 
+            }
+        });
+    }
     // 1. 获取前端传来的用户消息和历史记录
     const { request, env } = context;
     let body;
