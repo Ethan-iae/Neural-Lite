@@ -2621,7 +2621,7 @@
                 try {
                     // 将界面变为思考状态
                     console.log("🚀 正在请求 Gemini 大脑...");
-                    
+
                     const response = await fetch('/api/gemini', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -2636,7 +2636,7 @@
                     if (data.reply) {
                         // 清理掉大模型可能返回的多余 markdown 标记 (看你喜好)
                         finalResponse = data.reply.trim();
-                        this.saveContext(text, finalResponse); 
+                        this.saveContext(text, finalResponse);
                         return finalResponse;
                     } else {
                         throw new Error("模型返回异常");
@@ -2877,7 +2877,7 @@
             // === 新增：保存上下文的方法 ===
             saveContext(userInput, aiResponse) {
                 // 只保留最近 2 轮对话，防止拼接过长
-                if (this.history.length >= 2) {
+                if (this.history.length >= 10) {
                     this.history.shift();
                 }
                 this.history.push({ q: userInput, a: aiResponse });
@@ -3097,45 +3097,7 @@
         }
     </script>
     <script>
-        // =========================================
-        // 网页源码保护系统 
-        // =========================================
-        // 3. 拦截所有常见的开发者工具快捷键
-        document.onkeydown = function (e) {
-            // 兼容 Windows 和 Mac 的 Event 对象
-            e = e || window.event;
-            // F12
-            if (e.keyCode === 123) {
-                e.preventDefault();
-                return false;
-            }
-            // Ctrl + Shift + I (开发者工具)
-            if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
-                e.preventDefault();
-                return false;
-            }
-            // Ctrl + Shift + J (控制台)
-            if (e.ctrlKey && e.shiftKey && e.keyCode === 74) {
-                e.preventDefault();
-                return false;
-            }
-            // Ctrl + Shift + C (选择元素)
-            if (e.ctrlKey && e.shiftKey && e.keyCode === 67) {
-                e.preventDefault();
-                return false;
-            }
-            // Ctrl + U (查看源码)
-            if (e.ctrlKey && e.keyCode === 85) {
-                e.preventDefault();
-                return false;
-            }
-            // Ctrl + S (保存页面 - 虽然不能完全禁止，但可以拦截快捷键)
-            if (e.ctrlKey && e.keyCode === 83) {
-                e.preventDefault();
-                alert("本页面禁止保存");
-                return false;
-            }
-        };
+
 
     </script>
     <script>

@@ -114,3 +114,44 @@
                 configurable: false
             });
         } catch (e) { }
+
+
+         // =========================================
+        // 网页源码保护系统 
+        // =========================================
+        // 3. 拦截所有常见的开发者工具快捷键
+        document.onkeydown = function (e) {
+            // 兼容 Windows 和 Mac 的 Event 对象
+            e = e || window.event;
+            // F12
+            if (e.keyCode === 123) {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl + Shift + I (开发者工具)
+            if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl + Shift + J (控制台)
+            if (e.ctrlKey && e.shiftKey && e.keyCode === 74) {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl + Shift + C (选择元素)
+            if (e.ctrlKey && e.shiftKey && e.keyCode === 67) {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl + U (查看源码)
+            if (e.ctrlKey && e.keyCode === 85) {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl + S (保存页面 - 虽然不能完全禁止，但可以拦截快捷键)
+            if (e.ctrlKey && e.keyCode === 83) {
+                e.preventDefault();
+                alert("本页面禁止保存");
+                return false;
+            }
+        };
