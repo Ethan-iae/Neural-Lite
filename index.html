@@ -2597,82 +2597,57 @@
             async process(input) {
                 if (!input) return null;
                 let text = input.trim();
-                // 1. 预处理
                 let processedInput = this.preprocess(text);
-                // 定义一个临时变量用于存放最终回复
                 let finalResponse = null;
-                // 2. 天气检查 (保持原样)
+
+                // 【保留 1】：天气查询功能
                 const weatherRes = await this.checkWeather(text);
                 if (weatherRes) {
                     finalResponse = this.humanize(weatherRes);
-                    this.saveContext(text, finalResponse); // 保存记忆
+                    this.saveContext(text, finalResponse);
                     return finalResponse;
                 }
-                // 3. 话题名词捕捉 (保持原样)
-                for (let item of this.db) {
-                    if (item.q.length <= 5 && processedInput.includes(item.q)) {
-                        this.memory.lastTopic = item.q;
-                        console.log(`🎯 话题锁定: "${item.q}"`);
-                        break;
-                    }
-                }
-                // 4. 标准数据库搜索 (First Try)
+
+                // 【保留 2】：本地固定小彩蛋/系统指令搜索
                 let dbRes = this.searchDatabase(processedInput);
                 if (dbRes) {
                     finalResponse = this.humanize(dbRes);
-                    this.saveContext(text, finalResponse); // 保存记忆
+                    this.saveContext(text, finalResponse);
                     return finalResponse;
                 }
-                // ===============================================
-                // 🧠 5. 新增：上下文联想搜索 (Context Search)
-                // ===============================================
-                // 如果上面没搜到，且我有历史记录，尝试把“上一句的主题”和“现在的输入”拼起来搜
-                // 例如：上句聊“苹果”，这句问“好吃吗” -> 搜“苹果好吃吗”
-                if (this.history.length > 0) {
-                    const lastTurn = this.history[this.history.length - 1];
-                    // 策略 A: 拼接上一句 AI 的回答 + 当前输入 (应对追问)
-                    // 策略 B: 拼接上一句 用户的输入 + 当前输入 (应对补充)
-                    // 这里我们优先使用 memory.lastTopic (话题) 或 上一句用户输入
-                    let contextKey = "";
-                    if (this.memory.lastTopic) {
-                        contextKey = this.memory.lastTopic;
-                    } else {
-                        contextKey = lastTurn.q;
-                    }
-                    // 只有当当前输入比较短（像是追问）时才触发，防止胡乱拼接
-                    if (processedInput.length < 8) {
-                        const combinedInput = contextKey + processedInput; // 拼起来：苹果+好吃吗
-                        console.log(`🔗 尝试上下文搜索: "${combinedInput}"`);
-                        let contextRes = this.searchDatabase(combinedInput);
-                        if (contextRes) {
-                            finalResponse = this.humanize(contextRes);
-                            this.saveContext(text, finalResponse);
-                            return finalResponse;
-                        }
-                    }
-                }
-                // 6. 话题兜底 (保持原样)
-                if (this.memory.lastTopic && processedInput.includes("谁")) {
-                    let topicDef = this.searchDatabase(this.memory.lastTopic);
-                    if (topicDef) {
-                        finalResponse = `关于${this.memory.lastTopic}：` + topicDef;
-                        this.saveContext(text, finalResponse);
+
+                // 【全新 3】：接入 Gemini 大模型替换掉原来的正则和废话兜底
+                // 前面的都没拦截到，就交给大模型
+                try {
+                    // 将界面变为思考状态
+                    console.log("🚀 正在请求 Gemini 大脑...");
+                    
+                    const response = await fetch('/api/gemini', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            message: text,
+                            history: this.history // 将历史上下文传给 Gemini
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.reply) {
+                        // 清理掉大模型可能返回的多余 markdown 标记 (看你喜好)
+                        finalResponse = data.reply.trim();
+                        this.saveContext(text, finalResponse); 
                         return finalResponse;
+                    } else {
+                        throw new Error("模型返回异常");
                     }
-                }
-                // 7. 情感与模式匹配 (保持原样)
-                this.analyzeSentiment(processedInput);
-                const patternRes = this.matchPattern(processedInput);
-                if (patternRes) {
-                    finalResponse = this.humanize(patternRes);
-                    this.saveContext(text, finalResponse); // 保存记忆
+                } catch (e) {
+                    console.error("Gemini 请求失败:", e);
+                    // 只有断网或 API 报错时，才使用原来的随机兜底
+                    finalResponse = "我的云端神经元似乎断线了... " + getSmartFallback();
+                    this.saveContext(text, finalResponse);
                     return finalResponse;
                 }
-                // 8. 最终兜底 (Fallbacks)
-                // 使用扑克牌模式
-                finalResponse = this.humanize(getPokerFallback());
-                this.saveContext(text, finalResponse); // 即使是废话也要记录，保持对话流
-                return finalResponse;
             }
             // === 核心升级 1: 预处理同义词 (让它听懂各种说法) ===
             preprocess(input) {
