@@ -1398,35 +1398,26 @@
             0% {
                 opacity: 0;
                 transform: scale(0.96);
-                /* 初始稍微小一点，制造纵深感 */
-                filter: blur(5px);
-                /* 初始模糊，模拟旧显示器或视觉聚焦过程 */
-            }
-
-            40% {
-                opacity: 1;
-                /* 中途就已经完全不透明了 */
+                /* 初始缩小 */
+                /* 去掉 filter: blur(5px); */
             }
 
             100% {
                 opacity: 1;
                 transform: scale(1);
-                /* 最终恢复原大小 */
-                filter: blur(0);
-                /* 清除模糊 */
+                /* 去掉 filter: blur(0); */
             }
         }
 
         /* 找到现有的 .window-frame 类，添加 animation 属性 */
         .window-frame {
-            /* 1.5s: 动画时长，慢一点才优雅
-       cubic-bezier: 经典的 Apple 缓动曲线 (Ease-Out)，先快后慢
-       forwards: 动画结束后保持最终状态
-    */
-            animation: macBootFade 1.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
-            /* 确保初始状态不闪烁，配合 animation 使用 */
-            will-change: transform, opacity, filter;
-            /* 保持你原有的其他样式 (width, height, background 等) 不变 */
+            animation: macBootFade 1.2s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+            /* 强制开启硬件加速并优化文字渲染 */
+            backface-visibility: hidden;
+            -webkit-font-smoothing: subpixel-antialiased;
+            transform: translateZ(0);
+            /* 开启 3D 层 */
+            will-change: transform, opacity;
         }
 
         /* === 修复：页面加载时禁止动画 (防闪烁) === */
@@ -1670,8 +1661,60 @@
                 transform: translateY(0);
             }
         }
+
+        .retro-emoji {
+            height: 1.4em;
+            width: 1.4em;
+            vertical-align: -0.25em;
+            margin: 0 0.1em;
+            display: inline-block;
+            /* 增加一点点 Aqua 风格的投影 */
+            filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1));
+        }
     </style>
     <script>
+
+        const retroEmojiMap = {
+            // 基础情绪
+            "😂": "assets/emojis/1f602.png",
+            "🤣": "assets/emojis/1f601.png",
+            "😆": "assets/emojis/1f606.png",
+            "😭": "assets/emojis/1f62d.png",
+            "🥺": "assets/emojis/1f625.png",
+            "😳": "assets/emojis/1f633.png",
+
+            // 天气与环境 (已移除隐藏代码)
+            "🌍": "assets/emojis/earth.png",
+            "🌤": "assets/emojis/suncloud.png",    // 这里已清理
+            "🌡": "assets/emojis/thermometer.png", // 这里已清理
+            "🤔": "assets/emojis/thought.png",
+            "💧": "assets/emojis/droplet.png",
+            "🌬": "assets/emojis/dash.png",        // 这里已清理
+            "🎈": "assets/emojis/balloon.png",
+            "🌫": "assets/emojis/foggy.png",       // 这里已清理
+            "😷": "assets/emojis/face.png",
+
+            // 空气质量
+            "🟢": "assets/emojis/1f7e2.png",
+            "🟡": "assets/emojis/1f7e1.png",
+            "🟠": "assets/emojis/1f7e0.png",
+            "🔴": "assets/emojis/1f534.png",
+            "🟣": "assets/emojis/1f7e3.png",
+            "☠️": "assets/emojis/skull.png"
+        };
+        // 2. 定义处理函数 (增强版正则，处理变体符号)
+        function renderRetroEmojis(text) {
+            if (!text) return text;
+            const emojiKeys = Object.keys(retroEmojiMap);
+            // 匹配字典中的键，并考虑到可能存在的 \uFE0F 变体符
+            const regex = new RegExp(emojiKeys.map(e => e.replace(/./g, "$&\\uFE0F?")).join('|'), 'g');
+
+            return text.replace(regex, function (matched) {
+                const cleanKey = matched.replace(/\uFE0F/g, "");
+                const path = retroEmojiMap[cleanKey];
+                return path ? `<img src="${path}" class="retro-emoji" alt="${cleanKey}">` : matched;
+            });
+        }
 
         (function () {
             // 1. 读取配置
@@ -2374,7 +2417,7 @@
                 const waitTimer = setTimeout(() => {
                     addBubble("正在解算气象数据，请稍等...", 'ai');
                     if (typeof playSound === 'function') playSound('recv');
-                }, 3000); 
+                }, 3000);
 
                 try {
                     const cleanCity = city.replace(/[市区县]/g, "");
@@ -2397,18 +2440,18 @@
                     if (geoRes1 && geoRes1.results && geoRes1.results.length > 0) {
                         lat = geoRes1.results[0].latitude;
                         lng = geoRes1.results[0].longitude;
-                        resolvedCity = geoRes1.results[0].name; 
+                        resolvedCity = geoRes1.results[0].name;
                     } else {
                         // 引擎 2：OpenStreetMap 兜底解析（地图全，精确到小县城/区镇）
                         console.log(`Open-Meteo 未找到 "${cleanCity}"，正在启用 OSM 地图引擎兜底...`);
                         const geoUrl2 = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cleanCity)}&limit=1`;
                         const geoRes2 = await fetchTimeout(geoUrl2, 3000).then(r => r.json()).catch(() => null);
-                        
+
                         if (geoRes2 && geoRes2.length > 0) {
                             lat = geoRes2[0].lat;
                             lng = geoRes2[0].lon;
                             // 小地方就直接用用户输入的名字，因为 OSM 返回的全称太长了(比如：xx省xx市xx县)
-                            resolvedCity = cleanCity; 
+                            resolvedCity = cleanCity;
                         } else {
                             throw new Error("双引擎均无法解析该城市的经纬度");
                         }
@@ -2435,13 +2478,13 @@
                     // --- 1. 解析天气数据 ---
                     if (weatherData.status === 'fulfilled' && weatherData.value?.current) {
                         const cur = weatherData.value.current;
-                        
+
                         // Open-Meteo 的 WMO 天气代码转中文
                         const wmoCodes = {
                             0: "晴朗", 1: "大部晴朗", 2: "局部多云", 3: "阴天",
-                            45: "雾", 48: "结霜雾", 
+                            45: "雾", 48: "结霜雾",
                             51: "轻微毛毛雨", 53: "中等毛毛雨", 55: "密集毛毛雨",
-                            61: "小雨", 63: "中雨", 65: "大雨", 
+                            61: "小雨", 63: "中雨", 65: "大雨",
                             71: "小雪", 73: "中雪", 75: "大雪",
                             80: "阵雨", 81: "强阵雨", 82: "暴雨",
                             95: "雷暴", 96: "雷暴伴有轻微冰雹", 99: "雷暴伴有重冰雹"
@@ -2460,7 +2503,7 @@
 
                     // --- 2. 解析空气质量 (AQI) ---
                     let aqiSuccess = false;
-                    
+
                     // 策略A: WAQI (地面监测站优先)
                     if (waqiData.status === 'fulfilled' && waqiData.value?.status === 'ok' && waqiData.value.data?.length > 0) {
                         for (let i = 0; i < Math.min(waqiData.value.data.length, 5); i++) {
@@ -2473,7 +2516,7 @@
                             }
                         }
                     }
-                    
+
                     // 策略B: Open-Meteo AQI (卫星测算兜底)
                     if (!aqiSuccess && omAqiData.status === 'fulfilled' && omAqiData.value?.current?.us_aqi !== undefined) {
                         const aqiVal = omAqiData.value.current.us_aqi;
@@ -2929,23 +2972,20 @@
             bubbleDiv.className = `bubble ${role}-bubble`;
             // === 🛡️ 核心修复：智能解析格式 ===
             if (role === 'user') {
-                // 用户消息保持纯文本
                 bubbleDiv.textContent = text;
             } else {
-                // AI 消息：先对原始文本进行 HTML 转义，防止恶意脚本注入
                 let safeText = text
                     .replace(/&/g, "&amp;")
                     .replace(/</g, "&lt;")
                     .replace(/>/g, "&gt;")
                     .replace(/"/g, "&quot;")
                     .replace(/'/g, "&#039;");
-                // 2. 在转义后的文本上，安全地应用格式化
-                // 把换行符变成 <br>
                 let formatted = safeText.replace(/\n/g, '<br>');
-                // 把 **文字** 变成 <b>文字</b>
-                // 注意：因为 < 和 > 已经被转义了，这里手动添加的 <b> 标签是安全的
                 formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
-                // 3. 渲染
+
+                // ★ 关键修改：在这里调用你已经写好的转换函数
+                formatted = renderRetroEmojis(formatted);
+
                 bubbleDiv.innerHTML = formatted;
             }
             if (role === 'ai') {
@@ -3122,6 +3162,8 @@
                     .replace(/'/g, "&#039;");
                 let formatted = safeText.replace(/\n/g, '<br>');
                 formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+                // ★ 关键修改：在这里调用你已经写好的转换函数
+                formatted = renderRetroEmojis(formatted);
                 bubbleDiv.innerHTML = formatted;
             }
 
@@ -3441,6 +3483,9 @@
                 .replace(/"/g, "&quot;")
                 .replace(/'/g, "&#039;");
             let formatted = safeText.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+
+            // ★ 关键修改：让打字过程中的 Emoji 也变成 iOS 6 样式
+            formatted = renderRetroEmojis(formatted);
 
             // 2. 记录刚开始（三个点时）的宽高
             const startWidth = bubbleDiv.offsetWidth;

@@ -5,10 +5,10 @@ export async function onRequestPost(context) {
             // 这里写你想要劝退的文案，支持你前端的 Markdown 格式
             reply: "🚧 **系统升级维护中** 🚧\n\n抱歉，目前我的云端神经元正在进行休眠升级，暂时无法提供服务啦。大家先散了吧，等站长弄好了我再回来！"
         }), {
-            headers: { 
+            headers: {
                 "Content-Type": "application/json",
                 // 解决跨域问题（如果有的话）
-                "Access-Control-Allow-Origin": "*" 
+                "Access-Control-Allow-Origin": "*"
             }
         });
     }
