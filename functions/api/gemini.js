@@ -12,14 +12,14 @@ export async function onRequestPost(context) {
     const history = body.history || [];
 
     // 2. 从 Cloudflare 环境变量获取 API Key (避免代码泄露)
-    const apiKey = env.GEMINI_API_KEY; 
+    const apiKey = env.GEMINI_API_KEY;
     if (!apiKey) {
         return new Response(JSON.stringify({ error: "API Key not configured" }), { status: 500 });
     }
 
     // 3. 构造 Gemini 需要的上下文对话格式
     const contents = [];
-    
+
     // 注入系统人设 (System Instruction) - 可选，让AI更符合你的拟人设定
     contents.push({
         role: "user",
@@ -42,7 +42,7 @@ export async function onRequestPost(context) {
         parts: [{ text: userMessage }]
     });
 
-    // 4. 请求 Google Gemini API (这里使用免费的 gemini-1.5-flash 或 gemini-2.5-flash)
+    // 4. 请求 Google Gemini API
     const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
     try {
@@ -54,14 +54,25 @@ export async function onRequestPost(context) {
 
         const data = await geminiRes.json();
 
+        // 🌟【关键新增】：如果 Google 返回了官方错误，直接把它抛出来！
+        if (data.error) {
+            throw new Error(`Google官方拦截 [${data.error.code}]: ${data.error.message}`);
+        }
+
         // 提取 AI 的回复内容
         if (data.candidates && data.candidates.length > 0) {
+            // 🌟【关键新增】：判断是否被安全机制拦截
+            if (data.candidates[0].finishReason === "SAFETY") {
+                throw new Error("被 Gemini 安全机制拦截：内容可能违规。");
+            }
+            
             const aiReply = data.candidates[0].content.parts[0].text;
             return new Response(JSON.stringify({ reply: aiReply }), {
                 headers: { "Content-Type": "application/json" }
             });
         } else {
-            throw new Error("No candidates in response");
+            // 把 Google 返回的完整神秘数据打印出来看看
+            throw new Error("无返回文本。Google原始返回：" + JSON.stringify(data));
         }
     } catch (err) {
         return new Response(JSON.stringify({ error: "Gemini API Error", details: err.message }), { status: 500 });
