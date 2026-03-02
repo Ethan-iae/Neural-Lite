@@ -49,10 +49,10 @@ export async function onRequestPost(context) {
         const lastRequestTime = await context.env.CHAT_LOGS.get(rateLimitKey);
         const now = Date.now();
 
-        // 如果该 IP 之前访问过，且距离上次访问不足 10 秒（10000毫秒）
-        if (lastRequestTime && (now - parseInt(lastRequestTime)) < 10000) {
+        // 如果该 IP 之前访问过，且距离上次访问不足 3 秒（3000毫秒）
+        if (lastRequestTime && (now - parseInt(lastRequestTime)) < 3000) {
             return new Response(JSON.stringify({
-                reply: "⏳ **触发防刷机制**：你的发言太快啦，CPU都冒烟了！请休息 10 秒钟再发吧~"
+                reply: "⏳ **触发防刷机制**：你的发言太快啦，CPU都冒烟了！请休息 3 秒钟再发吧~"
             }), {
                 headers: { "Content-Type": "application/json" }
             });
@@ -162,8 +162,24 @@ export async function onRequestPost(context) {
         parts: [{ text: userMessage }]
     });
 
-    // 4. 请求 Google Gemini API
-    const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+    // 4. 从环境变量获取模型名称。如果后台没设置，直接报错！
+    const modelName = env.GEMINI_MODEL;
+    
+    if (!modelName) {
+        return new Response(JSON.stringify({ 
+            error: "Configuration Error", 
+            details: "后台未设置 GEMINI_MODEL 环境变量，请在 Cloudflare 设置" 
+        }), { 
+            status: 500,
+            headers: { 
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*" 
+            }
+        });
+    }
+
+    // 动态拼接请求 URL
+    const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
     try {
         const geminiRes = await fetch(targetUrl, {
