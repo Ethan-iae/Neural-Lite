@@ -827,14 +827,14 @@
                 font-size: 16px;
             }
 
-            /* 5. 关键：手机端输入框本体拉高、变胖，优化触控体验 */
+            /* 5. 关键：手机端输入框本体固定高度，对齐按钮 */
             input {
-                font-size: 16px;
-                /* 保持 16px，防止 iOS Safari 自动放大页面 */
-                padding: 10px 12px;
-                /* 🌟 核心修改：大幅增加输入框上下的内边距，把输入框彻底撑高 */
+                font-size: 16px; /* 保持 16px，防止 iOS Safari 自动放大页面 */
+                padding: 0 12px; /* 🌟 核心修改：取消上下内边距 */
+                height: 37.5px;    /* 🌟 核心修改：强制锁死高度为 37.5px */
+                line-height: normal; /* 确保输入光标和文字绝对居中 */
+                box-sizing: border-box; /* 确保边框计算在高度内 */
                 border-radius: 5px;
-                /* 手机端稍微增加一点圆角，更贴合手指点击直觉 */
             }
 
             /* 6. 输入区域底座适配：同步拉高整个金属底板 */
@@ -848,7 +848,7 @@
             /* 7. 顺便将手机端的发送按钮也拉高，匹配变高的输入框 */
             .input-box button.primary {
                 /* --- 保持手机端的物理排版尺寸不变 --- */
-                height: 38px !important; 
+                height: 37.5px !important; 
                 font-size: 14px !important;
                 flex-shrink: 0 !important;
                 white-space: nowrap !important;
