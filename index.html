@@ -3170,6 +3170,7 @@
                 let now = Date.now();
                 insertTimeDivider(now);
                 lastMessageTime = now;
+                window.isFirstSessionMessage = true; // ★★★ 新增这行：打上“首次聊天”的标记
             }
 
             logs.forEach(log => {
@@ -3184,10 +3185,16 @@
         function addBubble(text, role, isHistory = false, timestamp = null) {
             if (!timestamp) timestamp = Date.now();
 
-            // 如果距上一条消息超过 1 分钟（60000毫秒），或者这是通过代码添加的第一条动态消息
-            if (lastMessageTime === 0 || (timestamp - lastMessageTime > 60000)) {
+            // ★★★ 核心修改开始：增加首次聊天豁免逻辑 ★★★
+            if (window.isFirstSessionMessage && !isHistory) {
+                // 如果这是加载后的第一条新消息，说明屏幕上已经有初始时间线了，直接跳过生成
+                window.isFirstSessionMessage = false; // 消耗掉标记，以后的消息正常判断
+            } else if (lastMessageTime === 0 || (timestamp - lastMessageTime > 60000)) {
+                // 如果距上一条消息超过 1 分钟（60000毫秒），插入新时间线
                 insertTimeDivider(timestamp);
             }
+            // ★★★ 核心修改结束 ★★★
+
             // 更新最后一条消息的时间
             lastMessageTime = timestamp;
 
