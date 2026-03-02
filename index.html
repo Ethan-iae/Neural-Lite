@@ -2362,108 +2362,97 @@
                 }
             }
             async checkWeather(input) {
-                // 1. 触发检测
                 if (!input.includes("天气") && !input.includes("气温") && !input.includes("多少度")) {
                     return null;
                 }
                 let city = input.replace(/天气|气温|多少度|怎么样|查询|查一下|今天|现在|的|我|想|知道|看看|这里|那里|环境|指数|空气|质量|预报/g, "").trim();
                 if (!city || city.length === 0) city = "北京";
-                console.log(`🔍 [调试] 目标城市: "${city}"`);
 
                 addBubble(`正在连接气象卫星读取${city}的数据...`, 'ai');
                 if (typeof playSound === 'function') playSound('recv');
 
                 const waitTimer = setTimeout(() => {
-                    addBubble("网络有点小拥堵，正在加速获取中...", 'ai');
+                    addBubble("正在解算气象数据，请稍等...", 'ai');
                     if (typeof playSound === 'function') playSound('recv');
-                }, 4000); // 延长提示出现的时间，因为现在速度变快了，一般不需要提示
+                }, 3000); 
 
                 try {
-                    const timeHack = new Date().getTime();
                     const cleanCity = city.replace(/[市区县]/g, "");
 
-                    // 🚀 核心提速 1：去掉所有人工延迟，准备所有 URL
-                    const wttrUrl = `https://wttr.in/${encodeURIComponent(city)}?format=%C|%t|%f|%h|%w|%u|%P|%v&lang=zh-cn&t=${timeHack}`;
+                    // 🛠️ 兼容性更好的超时 fetch 工具
+                    const fetchTimeout = (url, ms) => Promise.race([
+                        fetch(url),
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))
+                    ]);
+
+                    // ==========================================
+                    // 🚀 第一步：极速获取经纬度 (Open-Meteo)
+                    // ==========================================
                     const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cleanCity)}&count=1&language=zh&format=json`;
-                    const waqiUrl = `/api/waqi?city=${encodeURIComponent(city)}`;
+                    const geoRes = await fetchTimeout(geoUrl, 3000).then(r => r.json()).catch(() => null);
 
-                    // 🚀 核心提速 2：高并发请求！同时去查【天气文本】、【经纬坐标】和【空气质量】
-                    const [wttrRes, geoRes, waqiRes] = await Promise.allSettled([
-                        fetch(wttrUrl, { signal: AbortSignal.timeout(3500) }).then(r => r.text()), // 增加3.5秒超时防卡死，去掉了耗时的3次重试
-                        fetch(geoUrl).then(r => r.json()),
-                        fetch(waqiUrl).then(r => r.json())
+                    let lat = null, lng = null, resolvedCity = city;
+                    if (geoRes && geoRes.results && geoRes.results.length > 0) {
+                        lat = geoRes.results[0].latitude;
+                        lng = geoRes.results[0].longitude;
+                        // 如果查到了，顺便用官方标准地名
+                        resolvedCity = geoRes.results[0].name; 
+                    } else {
+                        throw new Error("无法解析该城市的经纬度");
+                    }
+
+                    // ==========================================
+                    // 🚀 第二步：拿着经纬度，三路大军同时出击！
+                    // ==========================================
+                    // 1. Open-Meteo 综合天气 (温度、体感、湿度、风速、气压、天气代码)
+                    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,surface_pressure,wind_speed_10m&timezone=auto`;
+                    // 2. Open-Meteo AQI (备用空气数据)
+                    const omAqiUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lng}&current=us_aqi,pm2_5&timezone=auto`;
+                    // 3. 你的 WAQI (主力空气数据)
+                    const waqiUrl = `/api/waqi?city=${encodeURIComponent(resolvedCity)}`;
+
+                    const [weatherData, waqiData, omAqiData] = await Promise.allSettled([
+                        fetchTimeout(weatherUrl, 4000).then(r => r.json()),
+                        fetchTimeout(waqiUrl, 4000).then(r => r.json()),
+                        fetchTimeout(omAqiUrl, 4000).then(r => r.json())
                     ]);
 
-                    let report = `🌍 ${city}的实时天气\n`;
-                    let hasWttrData = false;
-                    let wttrDataArray = [];
+                    let report = `🌍 ${resolvedCity}的实时天气\n`;
 
-                    // --- 1. 处理天气基础信息 ---
-                    if (wttrRes.status === 'fulfilled' && !wttrRes.value.includes("Sorry") && wttrRes.value.length > 5) {
-                        wttrDataArray = wttrRes.value.split("|");
-                        if (wttrDataArray.length >= 8) {
-                            hasWttrData = true;
-                            let weatherText = wttrDataArray[0].trim();
-                            // 保留你的本地化翻译逻辑
-                            const translationFix = {
-                                "Shower in vicinity": "附近有阵雨", "Rain in vicinity": "附近有雨",
-                                "Thunderstorm in vicinity": "附近有雷暴", "Smoke": "烟雾", "Haze": "霾",
-                                "Dust": "浮尘", "Sand": "沙尘", "Mist": "薄雾", "Fog": "雾",
-                                "Clear": "晴", "Sunny": "晴朗", "Partly cloudy": "局部多云",
-                                "Cloudy": "多云", "Overcast": "阴", "Light rain": "小雨",
-                                "Moderate rain": "中雨", "Heavy rain": "大雨", "Light snow": "小雪",
-                                "Moderate snow": "中雪", "Heavy snow": "大雪", "Sleet": "雨夹雪",
-                                "Patchy rain possible": "可能有雨", "Thundery outbreaks possible": "可能有雷雨"
-                            };
-                            if (translationFix[weatherText]) weatherText = translationFix[weatherText];
+                    // --- 1. 解析天气数据 ---
+                    if (weatherData.status === 'fulfilled' && weatherData.value?.current) {
+                        const cur = weatherData.value.current;
+                        
+                        // Open-Meteo 的 WMO 天气代码转中文
+                        const wmoCodes = {
+                            0: "晴朗", 1: "大部晴朗", 2: "局部多云", 3: "阴天",
+                            45: "雾", 48: "结霜雾", 
+                            51: "轻微毛毛雨", 53: "中等毛毛雨", 55: "密集毛毛雨",
+                            61: "小雨", 63: "中雨", 65: "大雨", 
+                            71: "小雪", 73: "中雪", 75: "大雪",
+                            80: "阵雨", 81: "强阵雨", 82: "暴雨",
+                            95: "雷暴", 96: "雷暴伴有轻微冰雹", 99: "雷暴伴有重冰雹"
+                        };
+                        const weatherText = wmoCodes[cur.weather_code] || "未知";
 
-                            report += `🌤️ 天气：${weatherText}\n`;
-                            report += `🌡️ 温度：${wttrDataArray[1].trim().replace('+', '')}\n`;
-                            report += `🤔 体感：${wttrDataArray[2].trim().replace('+', '')}\n`;
-                            report += `💧 湿度：${wttrDataArray[3].trim()}\n`;
-                            report += `🌬️ 风速：${wttrDataArray[4].trim()}\n`;
-                        }
-                    }
-                    if (!hasWttrData) {
-                        report += `🌤️ 天气：气象卫星暂时失联，请稍后再试\n`;
+                        report += `🌤️ 天气：${weatherText}\n`;
+                        report += `🌡️ 温度：${cur.temperature_2m} °C\n`;
+                        report += `🤔 体感：${cur.apparent_temperature} °C\n`;
+                        report += `💧 湿度：${cur.relative_humidity_2m}%\n`;
+                        report += `🌬️ 风速：${cur.wind_speed_10m} km/h\n`;
+                        report += `🎈 气压：${cur.surface_pressure} hPa (地面)\n`;
+                    } else {
+                        report += `🌤️ 天气：获取失败\n`;
                     }
 
-                    // --- 2. 提取坐标 (优化：整个流程只查一次坐标) ---
-                    let lat = null, lng = null;
-                    if (geoRes.status === 'fulfilled' && geoRes.value?.results?.length > 0) {
-                        lat = geoRes.value.results[0].latitude;
-                        lng = geoRes.value.results[0].longitude;
-                    }
-
-                    // --- 3. 第二波并发：同时获取精准气压 和 AQI兜底 ---
-                    let pressurePromise = null;
-                    let omAqiPromise = null;
-
-                    if (lat !== null && lng !== null) {
-                        pressurePromise = fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=surface_pressure`).then(r => r.json());
-                        omAqiPromise = fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lng}&current=us_aqi,pm2_5&timezone=auto`).then(r => r.json());
-                    }
-
-                    const [pressRes, omAqiRes] = await Promise.allSettled([
-                        pressurePromise || Promise.reject(),
-                        omAqiPromise || Promise.reject()
-                    ]);
-
-                    // 处理气压
-                    if (pressRes.status === 'fulfilled' && pressRes.value?.current?.surface_pressure) {
-                        report += `🎈 气压：${pressRes.value.current.surface_pressure} hPa (地面)\n`;
-                    } else if (hasWttrData) {
-                        report += `🎈 气压：${wttrDataArray[6].trim()} (海平面)\n`;
-                    }
-
-                    // --- 4. 处理 AQI ---
+                    // --- 2. 解析空气质量 (AQI) ---
                     let aqiSuccess = false;
-
-                    // 策略A: WAQI
-                    if (waqiRes.status === 'fulfilled' && waqiRes.value?.status === 'ok' && waqiRes.value.data?.length > 0) {
-                        for (let i = 0; i < Math.min(waqiRes.value.data.length, 5); i++) {
-                            const val = parseInt(waqiRes.value.data[i].aqi);
-                            if (!isNaN(val) && waqiRes.value.data[i].aqi !== "-") {
+                    
+                    // 策略A: WAQI (地面监测站优先)
+                    if (waqiData.status === 'fulfilled' && waqiData.value?.status === 'ok' && waqiData.value.data?.length > 0) {
+                        for (let i = 0; i < Math.min(waqiData.value.data.length, 5); i++) {
+                            const val = parseInt(waqiData.value.data[i].aqi);
+                            if (!isNaN(val) && waqiData.value.data[i].aqi !== "-") {
                                 let level = val <= 50 ? "🟢(优)" : val <= 100 ? "🟡(良)" : val <= 150 ? "🟠(轻度)" : val <= 200 ? "🔴(中度)" : val <= 300 ? "🟣(重度)" : "☠️(严重)";
                                 report += `🌫️ 空气(AQI)：${val} ${level}\n📡 数据源：地面监测站`;
                                 aqiSuccess = true;
@@ -2471,11 +2460,11 @@
                             }
                         }
                     }
-
-                    // 策略B: Open-Meteo 兜底
-                    if (!aqiSuccess && omAqiRes.status === 'fulfilled' && omAqiRes.value?.current?.us_aqi !== undefined) {
-                        const aqiVal = omAqiRes.value.current.us_aqi;
-                        const pm25 = omAqiRes.value.current.pm2_5;
+                    
+                    // 策略B: Open-Meteo AQI (卫星测算兜底)
+                    if (!aqiSuccess && omAqiData.status === 'fulfilled' && omAqiData.value?.current?.us_aqi !== undefined) {
+                        const aqiVal = omAqiData.value.current.us_aqi;
+                        const pm25 = omAqiData.value.current.pm2_5;
                         let level = aqiVal <= 50 ? "🟢(优)" : aqiVal <= 100 ? "🟡(良)" : aqiVal <= 150 ? "🟠(轻度)" : aqiVal <= 200 ? "🔴(中度)" : aqiVal <= 300 ? "🟣(重度)" : "☠️(严重)";
                         report += `🌫️ 空气(AQI)：${aqiVal} ${level}\n😷 PM2.5：${pm25} µg/m³ (卫星估算)`;
                         aqiSuccess = true;
@@ -2489,7 +2478,7 @@
                 } catch (e) {
                     console.error("天气抓取彻底失败:", e);
                     clearTimeout(waitTimer);
-                    return "我现在无法连接网络，看不了天气。";
+                    return "气象卫星连接失败，可能是城市名字没认出来，或者网络开小差了。";
                 }
             }
             // 入口函数
