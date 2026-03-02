@@ -829,11 +829,16 @@
 
             /* 5. 关键：手机端输入框本体固定高度，对齐按钮 */
             input {
-                font-size: 16px; /* 保持 16px，防止 iOS Safari 自动放大页面 */
-                padding: 0 12px; /* 🌟 核心修改：取消上下内边距 */
-                height: 37.5px;    /* 🌟 核心修改：强制锁死高度为 37.5px */
-                line-height: normal; /* 确保输入光标和文字绝对居中 */
-                box-sizing: border-box; /* 确保边框计算在高度内 */
+                font-size: 16px;
+                /* 保持 16px，防止 iOS Safari 自动放大页面 */
+                padding: 0 12px;
+                /* 🌟 核心修改：取消上下内边距 */
+                height: 37.5px;
+                /* 🌟 核心修改：强制锁死高度为 37.5px */
+                line-height: normal;
+                /* 确保输入光标和文字绝对居中 */
+                box-sizing: border-box;
+                /* 确保边框计算在高度内 */
                 border-radius: 5px;
             }
 
@@ -848,7 +853,7 @@
             /* 7. 顺便将手机端的发送按钮也拉高，匹配变高的输入框 */
             .input-box button.primary {
                 /* --- 保持手机端的物理排版尺寸不变 --- */
-                height: 37.5px !important; 
+                height: 37.5px !important;
                 font-size: 14px !important;
                 flex-shrink: 0 !important;
                 white-space: nowrap !important;
@@ -856,12 +861,13 @@
                 padding: 0 12px !important;
 
                 /* --- 🌟 核心修改：同步清除弹窗主按钮的视觉样式 --- */
-                border-radius: 6px !important; /* 改为经典的方形小圆角 */
-                background: linear-gradient(to bottom, 
-                    #95c5f5 0%, 
-                    #75aef0 45%, 
-                    #3484e6 55%, 
-                    #78b1f2 100%) !important;
+                border-radius: 6px !important;
+                /* 改为经典的方形小圆角 */
+                background: linear-gradient(to bottom,
+                        #95c5f5 0%,
+                        #75aef0 45%,
+                        #3484e6 55%,
+                        #78b1f2 100%) !important;
                 border: 1px solid #16569e !important;
                 color: #fff !important;
                 text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.3) !important;
@@ -1689,12 +1695,51 @@
 
         const retroEmojiMap = {
             // 基础情绪
-            "😂": "assets/emojis/1f602.png",
             "🤣": "assets/emojis/1f601.png",
-            "😆": "assets/emojis/1f606.png",
-            "😭": "assets/emojis/1f62d.png",
             "🥺": "assets/emojis/1f625.png",
+            "😀": "assets/emojis/1f600.png",
+            "😁": "assets/emojis/1f601.png",
+            "😂": "assets/emojis/1f602.png",
+            "😃": "assets/emojis/1f603.png",
+            "😄": "assets/emojis/1f604.png",
+            "😅": "assets/emojis/1f605.png",
+            "😆": "assets/emojis/1f606.png",
+            "😇": "assets/emojis/1f607.png",
+            "😉": "assets/emojis/1f609.png",
+            "😊": "assets/emojis/1f60a.png",
+            "😋": "assets/emojis/1f60b.png",
+            "😌": "assets/emojis/1f60c.png",
+            "😍": "assets/emojis/1f60d.png",
+            "😎": "assets/emojis/1f60e.png",
+            "😏": "assets/emojis/1f60f.png",
+            "😐": "assets/emojis/1f610.png",
+            "😒": "assets/emojis/1f612.png",
+            "😓": "assets/emojis/1f613.png",
+            "😔": "assets/emojis/1f614.png",
+            "😖": "assets/emojis/1f616.png",
+            "😘": "assets/emojis/1f618.png",
+            "😚": "assets/emojis/1f61a.png",
+            "😜": "assets/emojis/1f61c.png",
+            "😝": "assets/emojis/1f61d.png",
+            "😞": "assets/emojis/1f61e.png",
+            "😠": "assets/emojis/1f620.png",
+            "😡": "assets/emojis/1f621.png",
+            "😢": "assets/emojis/1f622.png",
+            "😣": "assets/emojis/1f623.png",
+            "😤": "assets/emojis/1f624.png",
+            "😥": "assets/emojis/1f625.png",
+            "😨": "assets/emojis/1f628.png",
+            "😩": "assets/emojis/1f629.png",
+            "😪": "assets/emojis/1f62a.png",
+            "😫": "assets/emojis/1f62b.png",
+            "😭": "assets/emojis/1f62d.png",
+            "😰": "assets/emojis/1f630.png",
+            "😱": "assets/emojis/1f631.png",
+            "😲": "assets/emojis/1f632.png",
             "😳": "assets/emojis/1f633.png",
+            "😴": "assets/emojis/1f634.png",
+            "😵": "assets/emojis/1f635.png",
+            "😷": "assets/emojis/1f637.png",
 
             // 天气与环境 (已移除隐藏代码)
             "🌍": "assets/emojis/earth.png",
@@ -2456,7 +2501,7 @@
                         const bestMatch = geoRes1.results.reduce((prev, current) => {
                             return (prev.population || 0) > (current.population || 0) ? prev : current;
                         });
-                        
+
                         lat = bestMatch.latitude;
                         lng = bestMatch.longitude;
                         resolvedCity = bestMatch.name;
