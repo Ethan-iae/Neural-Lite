@@ -846,20 +846,33 @@
             }
 
             /* 7. 顺便将手机端的发送按钮也拉高，匹配变高的输入框 */
-            .input-box button {
-                height: 38px !important;
-                border-radius: 6px !important;
+            .input-box button.primary {
+                /* --- 保持手机端的物理排版尺寸不变 --- */
+                height: 38px !important; 
                 font-size: 14px !important;
-
-                /* 🌟 核心修复：防止发送按钮被挤压导致文字竖排 */
                 flex-shrink: 0 !important;
-                /* 拒绝被左侧输入框挤压变形 */
                 white-space: nowrap !important;
-                /* 强制内部文字横向单行显示，绝不换行 */
                 min-width: 64px !important;
-                /* 给定一个基础宽度，确保放得下两个字 */
                 padding: 0 12px !important;
-                /* 手机上稍微缩小一点左右边距，节省空间 */
+
+                /* --- 🌟 核心修改：同步清除弹窗主按钮的视觉样式 --- */
+                border-radius: 6px !important; /* 改为经典的方形小圆角 */
+                background: linear-gradient(to bottom, 
+                    #95c5f5 0%, 
+                    #75aef0 45%, 
+                    #3484e6 55%, 
+                    #78b1f2 100%) !important;
+                border: 1px solid #16569e !important;
+                color: #fff !important;
+                text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.3) !important;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.5) !important;
+            }
+
+            /* 🌟 同步：发送按钮按下去时的深色果冻状态 */
+            .input-box button.primary:active,
+            .input-box button.primary.pressed {
+                background: linear-gradient(to bottom, #267ce8 0%, #4e9af2 100%) !important;
+                box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.4) !important;
             }
 
             /* 隐藏非必要的装饰，比如窗口控制红绿灯按钮在手机上没用 */
@@ -2825,8 +2838,8 @@
             }
             // === 新增：保存上下文的方法 ===
             saveContext(userInput, aiResponse) {
-                // 只保留最近 2 轮对话，防止拼接过长
-                if (this.history.length >= 10) {
+                // 只保留最近 8 轮对话，防止拼接过长
+                if (this.history.length >= 8) {
                     this.history.shift();
                 }
                 this.history.push({ q: userInput, a: aiResponse });
