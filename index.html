@@ -2381,11 +2381,6 @@
                 }, 7000);
                 // =========== 👆【修改处 1：插入结束】👆 ===========
                 try {
-                    // 👇👇👇 新增下面这两行代码 👇👇👇
-                    // 🚀【速度优化核心】：提前在后台并发请求 AQI 和 城市坐标，不阻塞主线程
-                    const waqiPromise = fetch(`/api/waqi?city=${encodeURIComponent(city)}`).then(r => r.json()).catch(() => null);
-                    const geoPromise = fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city.replace(/[市区县]/g, ""))}&count=1&language=zh&format=json`).then(r => r.json()).catch(() => null);
-                    // 👆👆👆 新增结束 👆👆👆
                     // ============================================
                     // 🌤️ 第1步：获取人性化天气文本 (wttr.in)
                     // ============================================
@@ -2440,7 +2435,9 @@
                                     const cleanCity = city.replace(/[市区县]/g, "");
                                     // 步骤A：尝试 Open-Meteo 搜索城市
                                     try {
-                                        const geoJson = await geoPromise; // 👈 直接读取上面提前发出的坐标请求结果
+                                        const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cleanCity)}&count=1&language=zh&format=json`;
+                                        const geoRes = await fetch(geoUrl);
+                                        const geoJson = await geoRes.json();
                                         if (geoJson.results && geoJson.results.length > 0) {
                                             lat = geoJson.results[0].latitude;
                                             lng = geoJson.results[0].longitude;
@@ -2491,7 +2488,10 @@
                     // --- 【策略 A】优先尝试你的代码 (WAQI) ---
                     try {
                         // 修改：不再直接请求 waqi，而是请求我们刚刚创建的 Cloudflare Function
-                        const searchJson = await waqiPromise; // 👈 直接读取上面提前发出的空气质量请求结果
+                        // 这里的 /api/waqi 对应刚才创建的文件路径 functions/api/waqi.js
+                        const searchUrl = `/api/waqi?city=${encodeURIComponent(city)}`;
+                        const searchRes = await fetch(searchUrl);
+                        const searchJson = await searchRes.json();
                         let aqiVal = null;
                         if (searchJson.status === 'ok' && searchJson.data && searchJson.data.length > 0) {
                             const limit = Math.min(searchJson.data.length, 5);
