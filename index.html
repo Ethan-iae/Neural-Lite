@@ -2772,20 +2772,24 @@
                     // C. 综合打分 (Jaccard 权重更高，因为它对语序不敏感)
                     // 如果 Lev 分数很低，但 Jaccard 很高，说明用户可能颠倒了语序，我们依然认为匹配
                     let finalScore = (levScore * 0.4) + (jacScore * 0.6);
-                    // D. 包含关系加分
+                    // D. 包含关系加分 (降低加分权重，防止被长句误触)
                     if (cleanInput.includes(cleanQ) || cleanQ.includes(cleanInput)) {
-                        finalScore += 0.26;
+                        finalScore += 0.10; // 🌟 变严 1：把 0.26 降到 0.10
                     }
+
                     if (finalScore > maxScore) {
                         maxScore = finalScore;
                         bestMatch = item;
                     }
                 }
-                // 降低一点门槛，让它更容易回答
-                if (maxScore > 0.5) {
+
+                // 🌟 变严 2：大幅提高最终门槛，必须高度匹配才触发本地回复
+                if (maxScore > 0.75) { // 将 0.5 提高到 0.75（数值越接近1越严格）
+                    console.log(`🎯 触发本地彩蛋: [${bestMatch.q}] (得分: ${maxScore.toFixed(2)})`);
                     return this.getUniqueResponse(bestMatch.q, bestMatch.a);
                 }
-                return null;
+
+                return null; // 低于 0.75 分的，全部放行给 Gemini
             }
             matchPattern(input) { // 这里的 input 已经是 processedInput 了
                 // 移除这一行
