@@ -43,7 +43,7 @@ export async function onRequestPost(context) {
     });
 
     // 4. 请求 Google Gemini API
-    const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
 
     try {
         const geminiRes = await fetch(targetUrl, {
@@ -65,7 +65,7 @@ export async function onRequestPost(context) {
             if (data.candidates[0].finishReason === "SAFETY") {
                 throw new Error("被 Gemini 安全机制拦截：内容可能违规。");
             }
-            
+
             const aiReply = data.candidates[0].content.parts[0].text;
             return new Response(JSON.stringify({ reply: aiReply }), {
                 headers: { "Content-Type": "application/json" }
