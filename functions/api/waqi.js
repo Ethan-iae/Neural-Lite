@@ -1,6 +1,6 @@
 export async function onRequest(context) {
-    // 从请求 URL 中获取查询参数 (city)
-    const { request } = context;
+    // 1. 从 context 中获取 request 和 env（环境变量对象）
+    const { request, env } = context;
     const url = new URL(request.url);
     const city = url.searchParams.get("city");
 
@@ -11,8 +11,17 @@ export async function onRequest(context) {
         });
     }
 
-    // --- 这里是你的 API Key，现在它运行在服务器端，用户看不到了 ---
-    const token = '8eb22fc66433b4f47fbc76b6c3b00a3375049fc2';
+    // 2. 从 Cloudflare 环境变量获取 API Key (避免代码泄露)
+    const token = env.WAQI_API_KEY;
+    
+    // 增加一个安全校验：如果没有读取到环境变量，则返回错误
+    if (!token) {
+        return new Response(JSON.stringify({ error: "WAQI API Key not configured" }), {
+            headers: { "content-type": "application/json" },
+            status: 500,
+        });
+    }
+
     const targetUrl = `https://api.waqi.info/search/?keyword=${encodeURIComponent(city)}&token=${token}`;
 
     try {
@@ -20,11 +29,11 @@ export async function onRequest(context) {
         const response = await fetch(targetUrl);
         const data = await response.json();
 
-        // 将结果返回给你的前端
+        // 将结果返回给前端
         return new Response(JSON.stringify(data), {
             headers: {
                 "content-type": "application/json",
-                // 允许你的网页访问这个接口
+                // 允许网页访问这个接口
                 "Access-Control-Allow-Origin": "*"
             },
         });
