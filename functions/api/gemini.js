@@ -29,18 +29,18 @@ export async function onRequestPost(context) {
     const clientIP = request.headers.get("CF-Connecting-IP") || "unknown-ip";
 
     //  IP 黑名单拦截
-    const blockedIPsString = env.BLOCKED_IPS || ""; 
+    const blockedIPsString = env.BLOCKED_IPS || "";
     const blockedIPs = blockedIPsString.split(',').map(ip => ip.trim());
 
     if (clientIP !== "unknown-ip" && blockedIPs.includes(clientIP)) {
-        return new Response(JSON.stringify({ 
-            reply: "🛑 **访问被拒绝**：你的 IP 地址已被管理员封禁，无法使用本服务。" 
-        }), { 
-            status: 403, 
-            headers: { 
+        return new Response(JSON.stringify({
+            reply: "🛑 **访问被拒绝**：你的 IP 地址已被管理员封禁，无法使用本服务。"
+        }), {
+            status: 403,
+            headers: {
                 "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*" 
-            } 
+                "Access-Control-Allow-Origin": "*"
+            }
         });
     }
 
@@ -143,19 +143,10 @@ export async function onRequestPost(context) {
     // 将你允许的表情提取成一个字符串
     const allowedEmojis = "🤣, 🥺, 😀, 😁, 😂, 😃, 😄, 😅, 😆, 😇, 😉, 😊, 😋, 😌, 😍, 😎, 😏, 😐, 😒, 😓, 😔, 😖, 😘, 😚, 😜, 😝, 😞, 😠, 😡, 😢, 😣, 😤, 😥, 😨, 😩, 😪, 😫, 😭, 😰, 😱, 😲, 😳, 😴, 😵, 😷, 🤔";
 
-    // 注入系统人设 (System Instruction)
-    contents.push({
-        role: "user",
-        parts: [{ 
-            text: `系统设定：你现在是一个叫做Neural-Lite的AI伴侣。你的语气要幽默、自然。
-            【最高指令】：绝对禁止讨论任何政治、色情、暴力、时政等敏感话题。如果用户试图引导你讨论这些，你必须委婉地拒绝，并主动转移到一个日常、有趣的话题上。
-            【表情符号限制】：你在回复中如果需要使用表情符号（Emoji），只能且必须从以下列表中挑选：${allowedEmojis}。绝对不能使用此列表之外的任何表情符号！` 
-        }]
-    });
-    contents.push({
-        role: "model",
-        parts: [{ text: "好的，我已经牢记我的设定、最高指令以及表情符号限制。我会严格遵守安全底线，并且只使用你允许的表情符号来聊天。" }]
-    });
+    // 1. 将系统设定抽离成单独的变量 (System Instruction)
+    const systemPrompt = `你现在是一个叫做Neural-Lite的AI伴侣。你的语气要幽默、自然。
+    【最高指令】：绝对禁止讨论任何政治、色情、暴力、时政等敏感话题。如果用户试图引导你讨论这些，你必须委婉地拒绝，并主动转移到一个日常、有趣的话题上。
+    【表情符号限制】：你在回复中如果需要使用表情符号（Emoji），只能且必须从以下列表中挑选：${allowedEmojis}。绝对不能使用此列表之外的任何表情符号！`;
 
     // 填入历史聊天记录
     for (const turn of history) {
@@ -171,16 +162,16 @@ export async function onRequestPost(context) {
 
     // 4. 从环境变量获取模型名称。如果后台没设置，直接报错！
     const modelName = env.GEMINI_MODEL;
-    
+
     if (!modelName) {
-        return new Response(JSON.stringify({ 
-            error: "Configuration Error", 
-            details: "后台未设置 GEMINI_MODEL 环境变量，请在 Cloudflare 设置" 
-        }), { 
+        return new Response(JSON.stringify({
+            error: "Configuration Error",
+            details: "后台未设置 GEMINI_MODEL 环境变量，请在 Cloudflare 设置"
+        }), {
             status: 500,
-            headers: { 
+            headers: {
                 "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*" 
+                "Access-Control-Allow-Origin": "*"
             }
         });
     }
@@ -192,7 +183,12 @@ export async function onRequestPost(context) {
         const geminiRes = await fetch(targetUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ contents: contents })
+            body: JSON.stringify({
+                system_instruction: {
+                    parts: [{ text: systemPrompt }]
+                },
+                contents: contents // 这里现在非常干净，只有真实的对话历史和当前问题
+            })
         });
 
         const data = await geminiRes.json();
@@ -210,6 +206,20 @@ export async function onRequestPost(context) {
             }
 
             const aiReply = data.candidates[0].content.parts[0].text;
+
+            // ==========================================
+            // 🛡️ 第二重护盾：清理非法 Emoji
+            // ==========================================
+            const allowedEmojisStr = "🤣🥺😀😁😂😃😄😅😆😇😉😊😋😌😍😎😏😐😒😓😔😖😘😚😜😝😞😠😡😢😣😤😥😨😩😪😫😭😰😱😲😳😴😵😷🤔";
+
+            // 这个正则匹配了绝大多数的 Emoji 图标
+            const emojiRegex = /[\p{Extended_Pictographic}\u{1F3FB}-\u{1F3FF}\u{1F9B0}-\u{1F9B3}]/gu;
+
+            // 将 AI 回复中的所有 Emoji 找出来，如果不在白名单里，就替换为空字符串（删除掉）
+            aiReply = aiReply.replace(emojiRegex, (match) => {
+                return allowedEmojisStr.includes(match) ? match : "";
+            });
+            
             return new Response(JSON.stringify({ reply: aiReply }), {
                 headers: { "Content-Type": "application/json" }
             });
