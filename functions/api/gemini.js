@@ -145,10 +145,12 @@ export async function onRequestPost(context) {
     // 将你允许的表情提取成一个字符串
     const allowedEmojis = "🤣, 🥺, 😀, 😁, 😂, 😃, 😄, 😅, 😆, 😇, 😉, 😊, 😋, 😌, 😍, 😎, 😏, 😐, 😒, 😓, 😔, 😖, 😘, 😚, 😜, 😝, 😞, 😠, 😡, 😢, 😣, 😤, 😥, 😨, 😩, 😪, 😫, 😭, 😰, 😱, 😲, 😳, 😴, 😵, 😷, 💡, 💦, 💬, 💻, 👌, 👍, 👏, 🔍, 🎉, ✅, ❌ ";
 
-    // 1. 将系统设定抽离成单独的变量 (System Instruction)
-    const systemPrompt = `你现在是一个叫做Neural-Lite的AI伴侣。你的语气要幽默、自然。请尽量用简短、精炼的语言回答，字数尽量控制在100字以内。
-    【最高指令】：绝对禁止讨论任何政治、色情、暴力、时政等敏感话题。如果用户试图引导你讨论这些，你必须委婉地拒绝，并主动转移到一个日常、有趣的话题上。
-    【表情符号限制】：你在回复中如果需要使用表情符号（Emoji），只能且必须从以下列表中挑选：${allowedEmojis}。绝对不能使用此列表之外的任何表情符号！`;
+    // 1. 从 Cloudflare 环境变量获取自定义人设
+    // 如果后台没有设置 SYSTEM_PROMPT，就直接返回空字符串（什么都不给）
+    const customPrompt = env.SYSTEM_PROMPT ? (env.SYSTEM_PROMPT + "\n") : "";
+
+    // 2. 强制拼接 Emoji 规则
+    const systemPrompt = `${customPrompt}【表情符号限制】：你在回复中如果需要使用表情符号（Emoji），只能且必须从以下列表中挑选：${allowedEmojis}。绝对不能使用此列表之外的任何表情符号！`;
 
     // 填入历史聊天记录
     for (const turn of history) {
@@ -237,12 +239,12 @@ export async function onRequestPost(context) {
     try {
         const geminiRes = await fetch(targetUrl, {
             method: "POST",
-            headers: { 
+            headers: {
                 "Content-Type": "application/json",
                 // 🌟 【关键提醒】：你漏了这行！这是给 Google 的钥匙！
-                "x-goog-api-key": apiKey, 
+                "x-goog-api-key": apiKey,
                 // 🌟 这是给 Cloudflare 的钥匙（你填得非常正确，保持不变）
-                "cf-aig-authorization": "Bearer h08FQHEtYh_4D8IA4iaxI0-MqVaSbebZHvIGIidp" 
+                "cf-aig-authorization": "Bearer h08FQHEtYh_4D8IA4iaxI0-MqVaSbebZHvIGIidp"
             },
             body: JSON.stringify(requestBody)
         });
