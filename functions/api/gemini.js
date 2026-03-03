@@ -181,7 +181,7 @@ export async function onRequestPost(context) {
     // 动态拼接请求 URL
     // 将 Google 官方域名替换为开源社区提供的免费代理域名
     // 注意：这里使用的是社区公益代理，如果后期失效，可以更换为其他可用代理或自己用 Vercel 搭建一个。
-    const proxyBaseUrl = "https://gemini.baoshuo.site";
+    const proxyBaseUrl = "https://proxy-taupe-iota.vercel.app/";
     const targetUrl = `${proxyBaseUrl}/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
     // ==========================================
