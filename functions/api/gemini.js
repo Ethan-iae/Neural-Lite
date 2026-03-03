@@ -205,7 +205,7 @@ export async function onRequestPost(context) {
                 throw new Error("被 Gemini 安全机制拦截：内容可能违规。");
             }
 
-            const aiReply = data.candidates[0].content.parts[0].text;
+            let aiReply = data.candidates[0].content.parts[0].text;
 
             // ==========================================
             // 🛡️ 第二重护盾：清理非法 Emoji
@@ -219,7 +219,7 @@ export async function onRequestPost(context) {
             aiReply = aiReply.replace(emojiRegex, (match) => {
                 return allowedEmojisStr.includes(match) ? match : "";
             });
-            
+
             return new Response(JSON.stringify({ reply: aiReply }), {
                 headers: { "Content-Type": "application/json" }
             });
