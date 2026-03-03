@@ -179,12 +179,30 @@ export async function onRequestPost(context) {
     // 动态拼接请求 URL
     const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
-    // 动态构建请求体：兼容不支持 system_instruction 的模型（如 Gemma 3）
+    // ==========================================
+    // 🎭 魔法注入：为人设开辟后门
+    // ==========================================
+
+    // 如果当前使用的是 Gemma 模型，我们把人设“伪装”成历史对话的开头
+    if (modelName.toLowerCase().includes("gemma")) {
+        contents.unshift(
+            {
+                role: "user",
+                parts: [{ text: `【系统最高级指令】\n${systemPrompt}\n\n请确认你已完全理解上述设定，并在接下来的所有对话中严格遵守。如果理解，请简短回复“明白”。` }]
+            },
+            {
+                role: "model",
+                parts: [{ text: "明白！我已经完全加载了Neural-Lite的人格，将会严格遵守话题限制，并只使用允许的Emoji表情。我们可以开始聊天了！" }]
+            }
+        );
+    }
+
+    // 动态构建请求体
     const requestBody = {
-        contents: contents // 真实的对话历史和当前问题
+        contents: contents
     };
 
-    // 如果当前使用的模型不是 gemma，才加上系统指令
+    // 如果当前使用的模型不是 Gemma，就走正规的系统指令通道
     if (!modelName.toLowerCase().includes("gemma")) {
         requestBody.system_instruction = {
             parts: [{ text: systemPrompt }]
@@ -195,7 +213,7 @@ export async function onRequestPost(context) {
         const geminiRes = await fetch(targetUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(requestBody) // 使用动态构建的请求体
+            body: JSON.stringify(requestBody) // 发送最终组装好的数据
         });
 
         const data = await geminiRes.json();
