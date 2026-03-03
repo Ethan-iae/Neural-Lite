@@ -179,7 +179,10 @@ export async function onRequestPost(context) {
     }
 
     // 动态拼接请求 URL
-    const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+    // 将 Google 官方域名替换为开源社区提供的免费代理域名
+    // 注意：这里使用的是社区公益代理，如果后期失效，可以更换为其他可用代理或自己用 Vercel 搭建一个。
+    const proxyBaseUrl = "https://gemini.baoshuo.site";
+    const targetUrl = `${proxyBaseUrl}/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
     // ==========================================
     // 🎭 魔法注入：为人设开辟后门
@@ -234,15 +237,15 @@ export async function onRequestPost(context) {
         const geminiRes = await fetch(targetUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(requestBody) 
+            body: JSON.stringify(requestBody)
         });
 
         const data = await geminiRes.json();
 
         // 🌟【新增】：优雅处理 Google 官方在提问阶段的拦截 (promptFeedback)
         if (data.promptFeedback && data.promptFeedback.blockReason) {
-            return new Response(JSON.stringify({ 
-                reply: `**触发云端安全策略**：由于包含敏感词汇，该问题被 Google 底层引擎拒绝回答 (原因: ${data.promptFeedback.blockReason})。` 
+            return new Response(JSON.stringify({
+                reply: `**触发云端安全策略**：由于包含敏感词汇，该问题被 Google 底层引擎拒绝回答 (原因: ${data.promptFeedback.blockReason})。`
             }), {
                 headers: { "Content-Type": "application/json" }
             });
