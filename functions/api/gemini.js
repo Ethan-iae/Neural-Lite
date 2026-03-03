@@ -34,7 +34,7 @@ export async function onRequestPost(context) {
 
     if (clientIP !== "unknown-ip" && blockedIPs.includes(clientIP)) {
         return new Response(JSON.stringify({
-            reply: "🛑 **访问被拒绝**：你的 IP 地址已被管理员封禁，无法使用本服务。"
+            reply: "**访问被拒绝**：你的 IP 地址已被管理员封禁，无法使用本服务。"
         }), {
             status: 403,
             headers: {
@@ -52,7 +52,7 @@ export async function onRequestPost(context) {
         // 如果该 IP 之前访问过，且距离上次访问不足 3 秒（3000毫秒）
         if (lastRequestTime && (now - parseInt(lastRequestTime)) < 3000) {
             return new Response(JSON.stringify({
-                reply: "⏳ **触发防刷机制**：你的发言太快啦，CPU都冒烟了！请休息 3 秒钟再发吧~"
+                reply: "**触发防刷机制**：你的发言太快啦，CPU都冒烟了！请休息 3 秒钟再发吧~"
             }), {
                 headers: { "Content-Type": "application/json" }
             });
@@ -146,7 +146,7 @@ export async function onRequestPost(context) {
     const allowedEmojis = "🤣, 🥺, 😀, 😁, 😂, 😃, 😄, 😅, 😆, 😇, 😉, 😊, 😋, 😌, 😍, 😎, 😏, 😐, 😒, 😓, 😔, 😖, 😘, 😚, 😜, 😝, 😞, 😠, 😡, 😢, 😣, 😤, 😥, 😨, 😩, 😪, 😫, 😭, 😰, 😱, 😲, 😳, 😴, 😵, 😷, 💡, 💦, 💬, 💻, 👌, 👍, 👏, 🔍, 🎉, ✅, ❌ ";
 
     // 1. 将系统设定抽离成单独的变量 (System Instruction)
-    const systemPrompt = `你现在是一个叫做Neural-Lite的AI伴侣。你的语气要幽默、自然。
+    const systemPrompt = `你现在是一个叫做Neural-Lite的AI伴侣。你的语气要幽默、自然。请尽量用简短、精炼的语言回答，字数尽量控制在100字以内。
     【最高指令】：绝对禁止讨论任何政治、色情、暴力、时政等敏感话题。如果用户试图引导你讨论这些，你必须委婉地拒绝，并主动转移到一个日常、有趣的话题上。
     【表情符号限制】：你在回复中如果需要使用表情符号（Emoji），只能且必须从以下列表中挑选：${allowedEmojis}。绝对不能使用此列表之外的任何表情符号！`;
 
