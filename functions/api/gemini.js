@@ -239,8 +239,9 @@ export async function onRequestPost(context) {
             method: "POST",
             headers: { 
                 "Content-Type": "application/json",
-                // 🌟 终极杀招：在这里出示你的 Cloudflare 令牌！
-                // 请把【你的Cloudflare令牌】替换成你刚才生成的真实字符，注意保留前面的 Bearer 和空格
+                // 🌟 【关键提醒】：你漏了这行！这是给 Google 的钥匙！
+                "x-goog-api-key": apiKey, 
+                // 🌟 这是给 Cloudflare 的钥匙（你填得非常正确，保持不变）
                 "cf-aig-authorization": "Bearer h08FQHEtYh_4D8IA4iaxI0-MqVaSbebZHvIGIidp" 
             },
             body: JSON.stringify(requestBody)
