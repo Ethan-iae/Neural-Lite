@@ -251,9 +251,9 @@ export async function onRequestPost(context) {
             });
         }
 
-        // 🌟【关键新增】：如果 Google 返回了官方错误，直接把它抛出来！
+        // 🌟【关键修改】：如果报错，直接把完整的原始数据抛给前端！
         if (data.error) {
-            throw new Error(`Google官方拦截 [${data.error.code}]: ${data.error.message}`);
+            throw new Error(`详细报错信息: ${JSON.stringify(data)}`);
         }
 
         // 提取 AI 的回复内容
