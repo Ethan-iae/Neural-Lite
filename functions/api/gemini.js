@@ -178,11 +178,11 @@ export async function onRequestPost(context) {
         });
     }
 
-    // 动态拼接请求 URL
-    // 将 Google 官方域名替换为开源社区提供的免费代理域名
-    // 注意：这里使用的是社区公益代理，如果后期失效，可以更换为其他可用代理或自己用 Vercel 搭建一个。
-    const proxyBaseUrl = "https://proxy-taupe-iota.vercel.app";
-    const targetUrl = `${proxyBaseUrl}/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+    // 使用 Cloudflare 官方 AI 网关代理 (直接复制这段，我已经帮你填好你的专属 ID 了！)
+    const cfGatewayUrl = "https://gateway.ai.cloudflare.com/v1/6abc0b17224dfb34b75a3a9e83b4d156/gemini-proxy/google-ai-studio";
+
+    // 动态拼接请求 URL（网关地址 + Gemini 具体模型路径 + API Key）
+    const targetUrl = `${cfGatewayUrl}/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
     // ==========================================
     // 🎭 魔法注入：为人设开辟后门
