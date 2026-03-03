@@ -182,7 +182,8 @@ export async function onRequestPost(context) {
     const cfGatewayUrl = "https://gateway.ai.cloudflare.com/v1/6abc0b17224dfb34b75a3a9e83b4d156/gemini-proxy/google-ai-studio";
 
     // 动态拼接请求 URL（网关地址 + Gemini 具体模型路径 + API Key）
-    const targetUrl = `${cfGatewayUrl}/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+    // 🌟 关键修改 1：让网关网址保持纯净
+    const targetUrl = `${cfGatewayUrl}/v1beta/models/${modelName}:generateContent`;
 
     // ==========================================
     // 🎭 魔法注入：为人设开辟后门
@@ -236,7 +237,11 @@ export async function onRequestPost(context) {
     try {
         const geminiRes = await fetch(targetUrl, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+                "Content-Type": "application/json",
+                // 🌟 关键修改 2：把 Google 的 API Key 放到隐蔽的请求头里！
+                "x-goog-api-key": apiKey 
+            },
             body: JSON.stringify(requestBody)
         });
 
