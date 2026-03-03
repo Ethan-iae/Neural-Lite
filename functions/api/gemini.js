@@ -179,16 +179,23 @@ export async function onRequestPost(context) {
     // 动态拼接请求 URL
     const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
+    // 动态构建请求体：兼容不支持 system_instruction 的模型（如 Gemma 3）
+    const requestBody = {
+        contents: contents // 真实的对话历史和当前问题
+    };
+
+    // 如果当前使用的模型不是 gemma，才加上系统指令
+    if (!modelName.toLowerCase().includes("gemma")) {
+        requestBody.system_instruction = {
+            parts: [{ text: systemPrompt }]
+        };
+    }
+
     try {
         const geminiRes = await fetch(targetUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                system_instruction: {
-                    parts: [{ text: systemPrompt }]
-                },
-                contents: contents // 这里现在非常干净，只有真实的对话历史和当前问题
-            })
+            body: JSON.stringify(requestBody) // 使用动态构建的请求体
         });
 
         const data = await geminiRes.json();
