@@ -78,7 +78,9 @@ export async function onRequestPost(context) {
 
         // 后台静默保存到数据库
         context.waitUntil(
-            context.env.CHAT_LOGS.put(`log_${timeKey}`, JSON.stringify(logData))
+            context.env.CHAT_LOGS.put(`log_${timeKey}`, JSON.stringify(logData), {
+                expirationTtl: 604800 // 👈 关键在这里，7天后自动销毁
+            })
         );
     }
 
@@ -199,7 +201,26 @@ export async function onRequestPost(context) {
 
     // 动态构建请求体
     const requestBody = {
-        contents: contents
+        contents: contents,
+        // 【新增】：降低 Google API 的默认安全拦截阈值
+        safetySettings: [
+            {
+                category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                threshold: "BLOCK_ONLY_HIGH" // 仅拦截极高危色情内容。如果你想完全放开，可以改成 "BLOCK_NONE"
+            },
+            {
+                category: "HARM_CATEGORY_HATE_SPEECH",
+                threshold: "BLOCK_ONLY_HIGH"
+            },
+            {
+                category: "HARM_CATEGORY_HARASSMENT",
+                threshold: "BLOCK_ONLY_HIGH"
+            },
+            {
+                category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+                threshold: "BLOCK_ONLY_HIGH"
+            }
+        ]
     };
 
     // 如果当前使用的模型不是 Gemma，就走正规的系统指令通道
@@ -213,10 +234,19 @@ export async function onRequestPost(context) {
         const geminiRes = await fetch(targetUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(requestBody) // 发送最终组装好的数据
+            body: JSON.stringify(requestBody) 
         });
 
         const data = await geminiRes.json();
+
+        // 🌟【新增】：优雅处理 Google 官方在提问阶段的拦截 (promptFeedback)
+        if (data.promptFeedback && data.promptFeedback.blockReason) {
+            return new Response(JSON.stringify({ 
+                reply: `⚠️ **触发云端安全策略**：由于包含敏感词汇，该问题被 Google 底层引擎拒绝回答 (原因: ${data.promptFeedback.blockReason})。` 
+            }), {
+                headers: { "Content-Type": "application/json" }
+            });
+        }
 
         // 🌟【关键新增】：如果 Google 返回了官方错误，直接把它抛出来！
         if (data.error) {
