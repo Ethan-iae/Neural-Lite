@@ -206,7 +206,7 @@ export async function onRequestPost(context) {
         safetySettings: [
             {
                 category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-                threshold: "BLOCK_ONLY_HIGH" // 仅拦截极高危色情内容。如果你想完全放开，可以改成 "BLOCK_NONE"
+                threshold: "BLOCK_NONE" // 仅拦截极高危色情内容。如果你想完全放开，可以改成 "BLOCK_NONE"
             },
             {
                 category: "HARM_CATEGORY_HATE_SPEECH",
@@ -242,7 +242,7 @@ export async function onRequestPost(context) {
         // 🌟【新增】：优雅处理 Google 官方在提问阶段的拦截 (promptFeedback)
         if (data.promptFeedback && data.promptFeedback.blockReason) {
             return new Response(JSON.stringify({ 
-                reply: `⚠️ **触发云端安全策略**：由于包含敏感词汇，该问题被 Google 底层引擎拒绝回答 (原因: ${data.promptFeedback.blockReason})。` 
+                reply: `**触发云端安全策略**：由于包含敏感词汇，该问题被 Google 底层引擎拒绝回答 (原因: ${data.promptFeedback.blockReason})。` 
             }), {
                 headers: { "Content-Type": "application/json" }
             });
