@@ -132,9 +132,12 @@ export async function onRequestPost(context) {
         // 🌟 【核心修改在这里】：计算倒置时间戳
         const reverseTimestamp = Number.MAX_SAFE_INTEGER - Date.now();
 
-        // 生成最终的 Key，格式例如：log_7307199254740991_2024-05-20_20:30:45
-        // 前面的数字保证了最新记录排在最前，后面的日期保证了你用肉眼依然能看懂时间
-        const finalKey = `log_${reverseTimestamp}_${timeKey}`;
+        // 2. 🌟 核心优化：将数字转换为 36 进制字符串，并去掉冗余日期
+        // .toString(36) 会把长数字变成类似 "k1p4z5r2" 这样的短字符串
+        const shortID = reverseTimestamp.toString(36);
+        
+        // 最终 Key 格式：log_k1p4z5r2
+        const finalKey = `log_${shortID}`;
 
         // 2. 获取访客 IP 及其归属地 (利用 Cloudflare 自带的 request.cf 对象)
         const clientIP = request.headers.get("CF-Connecting-IP") || "unknown-ip";
