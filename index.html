@@ -317,7 +317,12 @@
             /* 更加圆润的胶囊形 */
             font-size: 13px;
             line-height: 1.4;
-            max-width: 70%;
+            
+            /* === 修改这里 === */
+            box-sizing: border-box; /* 确保内边距包含在计算的宽度内 */
+            max-width: calc(100% - 180px); /* 精确计算留出对方头像的空间 */
+            /* ================ */
+
             position: relative;
             /* 玻璃质感的边框和投影 */
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
@@ -813,7 +818,9 @@
 
             /* 3. 调整气泡宽度，手机屏幕窄，需要利用更多空间 */
             .bubble {
-                max-width: 85%;
+                /* === 修改这里 === */
+                max-width: calc(100% - 110px); /* 手机端留白可以稍微小一点(比如110px)，让文字显示更多 */
+                /* ================ */
                 font-size: 15px;
                 padding: 8px 14px;
             }
