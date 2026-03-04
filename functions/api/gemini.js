@@ -24,7 +24,7 @@ export async function onRequestPost(context) {
 
     // 1. 强制限制单次发言不超过 2000 字
     const userMessage = (body.message || "").substring(0, 2000);
-    
+
     // 2. 获取并判断历史记录长度
     let history = body.history || [];
 
@@ -135,7 +135,7 @@ export async function onRequestPost(context) {
         // 2. 🌟 核心优化：将数字转换为 36 进制字符串，并去掉冗余日期
         // .toString(36) 会把长数字变成类似 "k1p4z5r2" 这样的短字符串
         const shortID = reverseTimestamp.toString(36);
-        
+
         // 最终 Key 格式：log_k1p4z5r2
         const finalKey = `log_${shortID}`;
 
@@ -201,8 +201,11 @@ export async function onRequestPost(context) {
         "群体事件", "游行示威", "罢工", "罢课", "查水表", "请喝茶", "测试敏感拦截"
     ];
 
-    // 检查用户消息是否包含上述任何一个词汇
-    const isSensitive = sensitiveWords.some(word => userMessage.includes(word));
+
+
+    // 简单的降噪匹配示例
+    const cleanMessage = userMessage.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, "").toLowerCase();
+    const isSensitive = sensitiveWords.some(word => cleanMessage.includes(word.toLowerCase()));
 
     if (isSensitive) {
         // 触发敏感词，直接返回兜底回复，终止程序，绝对不请求 Google
@@ -375,7 +378,7 @@ export async function onRequestPost(context) {
             // 把 Google 返回的完整神秘数据打印出来看看
             throw new Error("无返回文本。Google原始返回：" + JSON.stringify(data));
         }
-   } catch (err) {
+    } catch (err) {
         return new Response(JSON.stringify({ error: "Gemini API Error", details: err.message }), { status: 500 });
     }
 } // 👈 这是 onRequestPost 的正确结束括号
