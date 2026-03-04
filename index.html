@@ -317,10 +317,12 @@
             /* 更加圆润的胶囊形 */
             font-size: 13px;
             line-height: 1.4;
-            
+
             /* === 修改这里 === */
-            box-sizing: border-box; /* 确保内边距包含在计算的宽度内 */
-            max-width: calc(100% - 180px); /* 精确计算留出对方头像的空间 */
+            box-sizing: border-box;
+            /* 确保内边距包含在计算的宽度内 */
+            max-width: calc(100% - 180px);
+            /* 精确计算留出对方头像的空间 */
             /* ================ */
 
             position: relative;
@@ -749,6 +751,13 @@
            ========================================= */
         @media screen and (max-width: 768px) {
 
+            #chat-container {
+                padding-left: 6px !important;
+                /* 缩小左边距（原为 18.5px） */
+                padding-right: 6px !important;
+                /* 缩小右边距（原为 6.5px） */
+            }
+
             /* ★★★ 新增：只在手机上把标题变成可点击的样子 ★★★ */
             /* ★★★ 修改：手机端标题移到左边 ★★★ */
             .header h1 {
@@ -819,7 +828,8 @@
             /* 3. 调整气泡宽度，手机屏幕窄，需要利用更多空间 */
             .bubble {
                 /* === 修改这里 === */
-                max-width: calc(100% - 90px); /* 手机端留白可以稍微小一点(比如90px)，让文字显示更多 */
+                max-width: calc(100% - 70px);
+                /* 手机端留白可以稍微小一点(比如70px)，让文字显示更多 */
                 /* ================ */
                 font-size: 15px;
                 padding: 8px 14px;
