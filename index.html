@@ -752,10 +752,22 @@
         @media screen and (max-width: 768px) {
 
             #chat-container {
-                padding-left: 6px !important;
-                /* 缩小左边距（原为 18.5px） */
-                padding-right: 6px !important;
-                /* 缩小右边距（原为 6.5px） */
+                /* 1. 让左右内边距保持一致且贴近边缘（这里设为 8px，你也可以改成 6px 或 10px） */
+                padding-left: 8px !important;  
+                padding-right: 8px !important; 
+                
+                /* 2. 隐藏 Firefox 和 IE/Edge 浏览器的滚动条 */
+                scrollbar-width: none !important; 
+                -ms-overflow-style: none !important; 
+                /* ★★★ 新增这一行：专门放大手机端的上下间距 ★★★ */
+                gap: 25px !important;
+            }
+
+            /* 3. 隐藏 Webkit 内核（苹果 Safari、谷歌 Chrome、所有手机自带浏览器）的滚动条 */
+            #chat-container::-webkit-scrollbar {
+                display: none !important;
+                width: 0 !important;
+                height: 0 !important;
             }
 
             /* ★★★ 新增：只在手机上把标题变成可点击的样子 ★★★ */
