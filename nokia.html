@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nokia 极简终端</title>
+    <style>
+        /* 绝对的极简黑白风，不使用任何老浏览器看不懂的 flex 布局 */
+        body { background-color: #ffffff; color: #000000; font-family: sans-serif; margin: 0; padding: 5px; }
+        h2 { font-size: 16px; margin-top: 5px; margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 5px;}
+        
+        /* 聊天框：带黑色边框，超出可滚动 */
+        #chat { height: 350px; overflow-y: auto; border: 1px solid #000000; margin-bottom: 10px; padding: 5px; background: #fafafa; }
+        
+        /* 消息样式 */
+        .msg { margin-bottom: 10px; border-bottom: 1px dashed #cccccc; padding-bottom: 8px; font-size: 14px; line-height: 1.4; word-wrap: break-word; }
+        .user-msg { color: #000000; font-weight: bold; }
+        .ai-msg { color: #333333; }
+        
+        /* 输入区 */
+        .input-area { width: 100%; text-align: center; }
+        #userInput { width: 70%; height: 30px; padding: 2px 5px; border: 1px solid #000; font-size: 14px; }
+        #sendBtn { width: 22%; height: 36px; border: 1px solid #000; background-color: #dddddd; color: #000; font-weight: bold; cursor: pointer; }
+        #sendBtn:active { background-color: #999999; color: #fff; }
+    </style>
+</head>
+<body>
+
+    <h2>Neural-Lite 终端</h2>
+    
+    <div id="chat">
+        <div class="msg ai-msg"><b>AI:</b> 连接就绪。请输入你的指令</div>
+    </div>
+    
+    <div class="input-area">
+        <input type="text" id="userInput" placeholder="在此输入...">
+        <button id="sendBtn" onclick="sendMessage()">发送</button>
+    </div>
+
+    <script>
+        // 【纯净 ES5 语法】不使用 let/const，不使用箭头函数，不使用 async/await
+        var chatBox = document.getElementById('chat');
+        var input = document.getElementById('userInput');
+        var btn = document.getElementById('sendBtn');
+        var historyLog = []; // 用于保存上下文记忆
+
+        // 添加消息到聊天框
+        function addMessage(sender, text, isAi) {
+            var div = document.createElement('div');
+            div.className = 'msg ' + (isAi ? 'ai-msg' : 'user-msg');
+            
+            // 老式的字符串拼接
+            div.innerHTML = '<b>' + sender + ':</b><br/>' + text.replace(/\n/g, '<br/>');
+            
+            chatBox.appendChild(div);
+            // 滚动到底部
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // 发送消息核心逻辑
+        function sendMessage() {
+            var text = input.value;
+            // 如果为空则不执行
+            if (text === null || text === '') {
+                return;
+            }
+            
+            // 锁定按钮，清空输入框
+            input.value = '';
+            btn.disabled = true;
+            btn.innerHTML = '发送中';
+            
+            addMessage('我', text, false);
+            
+            // 诺基亚时代的网络请求：XMLHttpRequest (AJAX 祖师爷)
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/api/gemini', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            
+            xhr.onreadystatechange = function() {
+                // 4 表示请求完成
+                if (xhr.readyState === 4) {
+                    // 解锁按钮
+                    btn.disabled = false;
+                    btn.innerHTML = '发送';
+                    
+                    if (xhr.status === 200) {
+                        try {
+                            // Opera 12 支持原生的 JSON 解析
+                            var res = JSON.parse(xhr.responseText);
+                            var reply = res.reply ? res.reply : '无返回内容';
+                            
+                            addMessage('AI', reply, true);
+                            
+                            // 保存历史记录给 Gemini (最多留 8 条防止炸内存)
+                            historyLog.push({ q: text, a: reply });
+                            if (historyLog.length > 8) {
+                                historyLog.shift();
+                            }
+                        } catch (e) {
+                            addMessage('系统', '解析数据失败', true);
+                        }
+                    } else {
+                        addMessage('系统', '网络请求失败，状态码: ' + xhr.status, true);
+                    }
+                }
+            };
+            
+            // 组装发给服务端的数据并发送
+            var requestData = JSON.stringify({
+                message: text,
+                history: historyLog
+            });
+            xhr.send(requestData);
+        }
+
+        // 绑定回车键发送 (诺基亚全键盘 E72 必备)
+        input.onkeypress = function(e) {
+            var event = e || window.event;
+            if (event.keyCode === 13) {
+                sendMessage();
+                return false;
+            }
+        };
+    </script>
+
+</body>
+</html>
