@@ -22,7 +22,7 @@ export async function onRequestPost(context) {
         return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400 });
     }
 
-    const userMessage = body.message || "";
+    const userMessage = body.message;
     const history = body.history || [];
 
     // ==========================================
