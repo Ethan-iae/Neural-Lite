@@ -22,8 +22,23 @@ export async function onRequestPost(context) {
         return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400 });
     }
 
-    const userMessage = body.message || ""; // 👈 修复 1：加上了 || "" 防崩溃
-    const history = body.history || [];
+    // 1. 强制限制单次发言不超过 2000 字
+    const userMessage = (body.message || "").substring(0, 2000);
+    
+    // 2. 获取并判断历史记录长度
+    let history = body.history || [];
+
+    // 如果历史记录达到或超过 60 条（一问一答算2条，即约30轮对话）
+    if (history.length >= 60) {
+        return new Response(JSON.stringify({
+            reply: "💡 **对话长度提醒**\n\n当前的对话历史已达到**60条**的上限啦。为了保证我的回复质量和运行效率，请开启新话题，我们重新开始聊吧！"
+        }), {
+            headers: {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*"
+            }
+        });
+    }
 
     // ==========================================
     // 🧹 新增：管理员一键清理 KV 日志的“超级密码”
@@ -83,10 +98,10 @@ export async function onRequestPost(context) {
         const lastRequestTime = await context.env.CHAT_LOGS.get(rateLimitKey);
         const now = Date.now();
 
-        // 如果该 IP 之前访问过，且距离上次访问不足 3 秒（3000毫秒）
-        if (lastRequestTime && (now - parseInt(lastRequestTime)) < 3000) {
+        // 如果该 IP 之前访问过，且距离上次访问不足 2 秒（2000毫秒）
+        if (lastRequestTime && (now - parseInt(lastRequestTime)) < 2000) {
             return new Response(JSON.stringify({
-                reply: "**触发防刷机制**：你的发言太快啦，CPU都冒烟了！请休息 3 秒钟再发吧~"
+                reply: "**触发防刷机制**：你的发言太快啦，CPU都冒烟了！请休息 2 秒钟再发吧~"
             }), {
                 headers: { "Content-Type": "application/json" }
             });
@@ -242,8 +257,9 @@ export async function onRequestPost(context) {
         });
     }
 
-    // 使用 Cloudflare 官方 AI 网关代理 (直接复制这段，我已经帮你填好你的专属 ID 了！)
-    const cfGatewayUrl = "https://gateway.ai.cloudflare.com/v1/6abc0b17224dfb34b75a3a9e83b4d156/gemini-proxy/google-ai-studio";
+    // 使用 Cloudflare 官方 AI 网关代理
+    // 获取网关地址
+    const cfGatewayUrl = env.CF_GATEWAY_URL;
 
     // 动态拼接请求 URL（网关地址 + Gemini 具体模型路径 + API Key）
     // 🌟 关键修改 1：让网关网址保持纯净
@@ -305,8 +321,8 @@ export async function onRequestPost(context) {
                 "Content-Type": "application/json",
                 // 🌟 【关键提醒】：你漏了这行！这是给 Google 的钥匙！
                 "x-goog-api-key": apiKey,
-                // 🌟 这是给 Cloudflare 的钥匙（你填得非常正确，保持不变）
-                "cf-aig-authorization": "Bearer h08FQHEtYh_4D8IA4iaxI0-MqVaSbebZHvIGIidp"
+                // 🌟 这是给 Cloudflare 的钥匙
+                "cf-aig-authorization": env.CF_AIG_TOKEN
             },
             body: JSON.stringify(requestBody)
         });
@@ -356,7 +372,20 @@ export async function onRequestPost(context) {
             // 把 Google 返回的完整神秘数据打印出来看看
             throw new Error("无返回文本。Google原始返回：" + JSON.stringify(data));
         }
-    } catch (err) {
+   } catch (err) {
         return new Response(JSON.stringify({ error: "Gemini API Error", details: err.message }), { status: 500 });
     }
+} // 👈 这是 onRequestPost 的正确结束括号
+
+// ==========================================
+// 🌐 新增：处理跨域请求 (CORS) 预检
+// ==========================================
+export async function onRequestOptions() {
+    return new Response(null, {
+        headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type" // 允许前端带 Content-Type 请求头
+        }
+    });
 }
