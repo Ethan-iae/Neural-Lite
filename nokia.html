@@ -76,45 +76,49 @@
         }
 
         /* 输入区 */
+        /* 修改输入区容器，确保不留死角 */
         .input-area {
             width: 100%;
-            text-align: center;
             margin: 0;
-            /* 确保 form 标签不会产生意外的外边距 */
-            padding: 5px 0;
+            padding: 0;
         }
 
-        /* --- 优化 4：强制垂直居中对齐 --- */
+        /* 调整输入框：宽度改为 100% 以填充 td */
         #userInput {
-            width: 70%;
+            width: 100%;
+            /* 填充父级 td */
             height: 32px;
-            /* 固定高度 */
             padding: 2px 5px;
             border: 1px solid #000;
             font-size: 14px;
             vertical-align: middle;
-            /* 核心：防止按钮跳行 */
-            line-height: 28px;
+            /* 确保在老浏览器中不溢出 */
+            display: block;
         }
 
+        /* 调整按钮：宽度改为 100% 以填充 td */
         #sendBtn {
-            width: 22%;
+            width: 100%;
+            /* 填充父级 td */
             height: 32px;
-            /* 高度必须与输入框一致 */
             border: 1px solid #000;
             background-color: #dddddd;
             color: #000;
             font-weight: bold;
             vertical-align: middle;
-            /* 核心：防止按钮跳行 */
             cursor: pointer;
-            padding: 0;
-            /* 清除默认内边距 */
+            display: block;
         }
 
         #sendBtn:active {
             background-color: #999999;
             color: #fff;
+        }
+
+        /* 强制消除标题顶部的默认留白 */
+        h2 {
+            margin-top: 0px;
+            line-height: 20px;
         }
     </style>
 </head>
@@ -128,8 +132,16 @@
     </div>
 
     <form class="input-area" onsubmit="sendMessage(); return false;">
-        <input type="text" id="userInput" placeholder="在此输入..." spellcheck="false">
-        <button type="submit" id="sendBtn">发送</button>
+        <table style="width: 95%; margin: 0 auto; table-layout: fixed;" cellspacing="0" cellpadding="0" border="0">
+            <tr>
+                <td style="width: 76%; padding-right: 2px;">
+                    <input type="text" id="userInput" placeholder="在此输入..." spellcheck="false">
+                </td>
+                <td style="width: 24%;">
+                    <button type="submit" id="sendBtn">发送</button>
+                </td>
+            </tr>
+        </table>
     </form>
     <script>
         // 【纯净 ES5 语法】不使用 let/const，不使用箭头函数，不使用 async/await
