@@ -25,6 +25,44 @@ export async function onRequestPost(context) {
     const userMessage = body.message;
     const history = body.history || [];
 
+    // ==========================================
+    // 🧹 新增：管理员一键清理 KV 日志的“超级密码”
+    // ==========================================
+    const ADMIN_CLEAR_COMMAND = "/clear_logs_888"; // 👈 你可以把这里改成只有你才知道的复杂密码
+
+    if (userMessage === ADMIN_CLEAR_COMMAND && context.env.CHAT_LOGS) {
+        let listed;
+        let deletedCount = 0;
+
+        try {
+            // 循环获取并删除所有以 "log_" 开头的键值（避开防刷机制的 rate_limit 键）
+            do {
+                listed = await context.env.CHAT_LOGS.list({ prefix: "log_" });
+                
+                // 批量删除获取到的键
+                const deletePromises = listed.keys.map(key => context.env.CHAT_LOGS.delete(key.name));
+                await Promise.all(deletePromises);
+                
+                deletedCount += listed.keys.length;
+            } while (!listed.list_complete); // 如果数据很多，Cloudflare 会分页，这里确保全删完
+
+            return new Response(JSON.stringify({
+                reply: `🧹 **系统提示**：清理完毕！共清空了 ${deletedCount} 条对话记录。你的 KV 数据库现在干干净净了。`
+            }), {
+                headers: { 
+                    "Content-Type": "application/json",
+                    "Access-Control-Allow-Origin": "*"
+                }
+            });
+        } catch (error) {
+            return new Response(JSON.stringify({
+                reply: `❌ **清理失败**：操作 KV 数据库时发生错误 (${error.message})。`
+            }), {
+                headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+            });
+        }
+    }
+
     // 获取访客的真实 IP
     const clientIP = request.headers.get("CF-Connecting-IP") || "unknown-ip";
 
@@ -69,11 +107,32 @@ export async function onRequestPost(context) {
     // 💾 新增：存入 KV 数据库，用于后期在后台查看
     // ==========================================
     if (context.env.CHAT_LOGS) {
-        const timeKey = new Date().toISOString(); // 生成当前时间作为标识
+        // 1. 将时间转换为 UTC+8 (北京/台北/新加坡时间)
+        // 使用 Intl.DateTimeFormat 强制指定时区，并格式化为 YYYY-MM-DD_HH:mm:ss
+        const timeFormatter = new Intl.DateTimeFormat('zh-CN', {
+            timeZone: 'Asia/Shanghai',
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit', second: '2-digit',
+            hour12: false
+        });
+        // 格式化输出示例："2024/05/20 20:30:45" -> 替换为 "2024-05-20_20:30:45"
+        const timeKey = timeFormatter.format(new Date()).replace(/\//g, '-').replace(' ', '_');
+
+        // 2. 获取访客 IP 及其归属地 (利用 Cloudflare 自带的 request.cf 对象)
+        const clientIP = request.headers.get("CF-Connecting-IP") || "unknown-ip";
+        const country = request.cf?.country || "未知国家";
+        const region = request.cf?.region || "未知省/州";
+        const city = request.cf?.city || "未知城市";
+        
+        // 拼接归属地字符串，例如："CN - Beijing - Beijing"
+        const location = `${country} - ${region} - ${city}`;
+
         const logData = {
+            time: timeKey,                 // 在数据体中也存一份时间，方便直接查看
             message: userMessage,
-            historyLength: history.length, // 可选：看看他们聊了几个回合
-            ip: request.headers.get("CF-Connecting-IP") // 可选：获取访客IP
+            historyLength: history.length, 
+            ip: clientIP,                  // 访客 IP
+            location: location             // 【新增】IP 归属地
         };
 
         // 后台静默保存到数据库
