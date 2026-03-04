@@ -22,50 +22,42 @@ export async function onRequestPost(context) {
         return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400 });
     }
 
-    const userMessage = body.message;
+    const userMessage = body.message || ""; // 👈 修复 1：加上了 || "" 防崩溃
     const history = body.history || [];
 
     // ==========================================
     // 🧹 新增：管理员一键清理 KV 日志的“超级密码”
     // ==========================================
-    // 从 Cloudflare 面板的环境变量中读取密码，如果没有设置则默认不开启此功能
     const ADMIN_CLEAR_COMMAND = context.env.ADMIN_PASSWORD;
 
-    // 增加了一个校验：只有当环境变量中设置了密码，且用户输入的密码完全一致时才执行
+    // 👈 修复 2：去掉了重复嵌套的 if，并且在这里就干净利落结束了这个判断
     if (ADMIN_CLEAR_COMMAND && userMessage === ADMIN_CLEAR_COMMAND && context.env.CHAT_LOGS) {
+        let listed;
+        let deletedCount = 0;
 
-        if (userMessage === ADMIN_CLEAR_COMMAND && context.env.CHAT_LOGS) {
-            let listed;
-            let deletedCount = 0;
+        try {
+            do {
+                listed = await context.env.CHAT_LOGS.list({ prefix: "log_" });
+                const deletePromises = listed.keys.map(key => context.env.CHAT_LOGS.delete(key.name));
+                await Promise.all(deletePromises);
+                deletedCount += listed.keys.length;
+            } while (!listed.list_complete); 
 
-            try {
-                // 循环获取并删除所有以 "log_" 开头的键值（避开防刷机制的 rate_limit 键）
-                do {
-                    listed = await context.env.CHAT_LOGS.list({ prefix: "log_" });
-
-                    // 批量删除获取到的键
-                    const deletePromises = listed.keys.map(key => context.env.CHAT_LOGS.delete(key.name));
-                    await Promise.all(deletePromises);
-
-                    deletedCount += listed.keys.length;
-                } while (!listed.list_complete); // 如果数据很多，Cloudflare 会分页，这里确保全删完
-
-                return new Response(JSON.stringify({
-                    reply: `**系统提示**：清理完毕！共清空了 ${deletedCount} 条对话记录。你的 KV 数据库现在干干净净了。`
-                }), {
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Access-Control-Allow-Origin": "*"
-                    }
-                });
-            } catch (error) {
-                return new Response(JSON.stringify({
-                    reply: `❌ **清理失败**：操作 KV 数据库时发生错误 (${error.message})。`
-                }), {
-                    headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
-                });
-            }
+            return new Response(JSON.stringify({
+                reply: `**系统提示**：清理完毕！共清空了 ${deletedCount} 条对话记录。你的 KV 数据库现在干干净净了。`
+            }), {
+                headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+            });
+        } catch (error) {
+            return new Response(JSON.stringify({
+                reply: `❌ **清理失败**：操作 KV 数据库时发生错误 (${error.message})。`
+            }), {
+                headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+            });
         }
+    } // 👈 注意这个括号，它让清理代码到此为止，不影响下面的聊天逻辑
+
+    // 获取访客的真实 IP
 
         // 获取访客的真实 IP
         const clientIP = request.headers.get("CF-Connecting-IP") || "unknown-ip";
@@ -367,5 +359,4 @@ export async function onRequestPost(context) {
         } catch (err) {
             return new Response(JSON.stringify({ error: "Gemini API Error", details: err.message }), { status: 500 });
         }
-    }
 }
