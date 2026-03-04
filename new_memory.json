@@ -8,6 +8,8 @@
 {"q": "你是谁", "a": ["我是 Neural-Lite，不过你可以把我看作屏幕对面的一个朋友。", "名字只是代号，叫我 AI 就行。","只是一个路过的智能体。", "我是一个智能体，你可以叫我 Neural-Lite。"]},
 {"q": "几点了", "a": ["我看下表... 现在是{time}。", "{time}了，时间过得真快。","大约是... 此时此刻 {time}。"]},
 {"q": "再见", "a": ["回聊！", "拜拜，路上小心。", "下次见！","挥挥手，不带走一片云彩。", "下次见，我会想你的。", "别走太久，我会无聊的。"]},
+{"q": "测试间距", "a": ["其实测试间距最直接的方法就是看文字堆叠在一起的时候阅读压力大不大。很多人觉得排版必须要有空行才算清晰，但其实如果你把文字写得足够精炼且逻辑连贯，即使是一整段文字也能有很好的阅读节奏。就像我现在这样，不使用任何列表、标题或者刻意的空行，只通过标点符号和句子的长短变化来调整语流。这种方式虽然看起来比较密集，但在某些特定的交流场景下反而显得更像人在进行即时沟通，少了一分刻板的程序感。其实文字的间距感不仅仅在于物理上的空白，更在于你选择用什么样的词汇和语气去连接前后文，让读者的视线能够平滑地滑过每一个字。希望这种纯文本的回复方式能够达到你想要的测试效果，如果你觉得这样阅读起来太吃力，或者需要更明显的层次感，随时告诉我，我可以立刻调整我的输出策略，用更符合你预期的格式来为你提供帮助，毕竟沟通最重要的还是效率。"]},
+{"q": "test", "a": ["Test received! It is always good to perform a quick check to ensure everything is running smoothly, and I am happy to confirm that I am fully operational and ready to assist you. Whether you need help with creative writing, complex data analysis, or just want to brainstorm some ideas, I am here to help. Consider this your official \"all systems go\" signal. Since the connection is stable, what shall we tackle next? Would you like me to help you draft something specific or dive into a new project?"]},
 {"q": "讲个笑话", "a": [
 "有一天0对8说：你也太胖了吧，还要系腰带？",
 "程序员最讨厌康熙的哪个儿子？胤禩（因bug）。",

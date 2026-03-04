@@ -10,9 +10,31 @@
     <title>Neural-Lite</title>
     <link rel="icon" type="image/png" href="alien-monster_1f47e.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
+        /* =========================================
+           引入真实的 Mac OS X 经典英文字体
+           ========================================= */
+        @font-face {
+            font-family: 'Classic-Lucida';
+            src: url('assets/fonts/LucidaGrande.woff2') format('woff2');
+            /* 确保路径对应你存放的位置 */
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+            unicode-range: U+0000-00FF;
+        }
+
+        @font-face {
+            font-family: 'Classic-Lucida';
+            src: url('assets/fonts/LucidaGrande-Bold.woff2') format('woff2');
+            font-weight: bold;
+            font-style: normal;
+            font-display: swap;
+            unicode-range: U+0000-00FF;
+        }
+
         /* =========================================
                 Aqua/Skeuomorphic Style System
            ========================================= */
@@ -25,35 +47,34 @@
         }
 
         /* =========================================
-   字体与 Quartz 2D 渲染模拟引擎
-   ========================================= */
-body, input, button {
-    /* 1. 字体栈：优先使用引入的云端字体，找不到再用系统兜底 */
-    font-family: "PT Sans", "Noto Sans SC", "Lucida Grande", "STHeiti", "华文黑体", sans-serif;
-    
-    /* 2. 核心渲染调整 */
-    -webkit-font-smoothing: antialiased; /* 消除 Windows 默认的锯齿感 */
-    -moz-osx-font-smoothing: grayscale;
-    
-    /* 3. 终极伪装：OS X 字体发胖滤镜 */
-    /* 利用亚像素级的 text-shadow，强制让 Windows 和安卓的干瘪字体“丰满”起来，模拟当年 Mac 屏幕的发墨感 */
-    text-shadow: 
-        0.1px 0.1px 0px rgba(0, 0, 0, 0.2), 
-        -0.1px -0.1px 0px rgba(0, 0, 0, 0.1);
-        
-    /* 稍微拉开一点字距，当年的界面没有现在这么紧凑 */
-    letter-spacing: 0.3px; 
-}
+           字体与 Quartz 2D 渲染模拟引擎 (终极完美版)
+           ========================================= */
+        body,
+        input,
+        button {
+            /* 1. 字体栈：我们自定义的真实苹果英文字体放在绝对的第一位！
+               英文/数字会被 Classic-Lucida 完美接管。
+               遇到中文时，它会自动向后寻找，交给 Noto Sans SC 或系统黑体。 */
+            font-family: 'Classic-Lucida', "Noto Sans SC", "STHeiti", "华文黑体", sans-serif;
 
-/* 针对暗色模式，需要反转高光，防止发糊 */
-body.dark-mode, 
-body.dark-mode input, 
-body.dark-mode button {
-    -webkit-font-smoothing: subpixel-antialiased;
-    text-shadow: 
-        0.1px 0.1px 0px rgba(255, 255, 255, 0.15), 
-        -0.1px -0.1px 0px rgba(255, 255, 255, 0.05);
-}
+            /* 2. 核心渲染调整 */
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+
+            /* 3. 柔和发胖滤镜：真正的 Lucida 本身就很饱满，只需要极弱的阴影来模拟早期屏幕的晕染感即可 */
+            text-shadow: 0 0 0.5px rgba(0, 0, 0, 0.2);
+
+            /* 还原当年的微宽字距 */
+            letter-spacing: 0.2px;
+        }
+
+        /* 暗色模式下，反转阴影颜色并微调透明度 */
+        body.dark-mode,
+        body.dark-mode input,
+        body.dark-mode button {
+            -webkit-font-smoothing: subpixel-antialiased;
+            text-shadow: 0 0 0.5px rgba(255, 255, 255, 0.2);
+        }
 
         body {
             background-color: #c5c5c5;
@@ -784,16 +805,17 @@ body.dark-mode button {
 
             #chat-container {
                 /* 1. 让左右内边距保持一致且贴近边缘 */
-                padding-left: 10px !important;  
-                padding-right: 10px !important; 
-                
+                padding-left: 10px !important;
+                padding-right: 10px !important;
+
                 /* 2. 隐藏 Firefox 和 IE/Edge 浏览器的滚动条 */
-                scrollbar-width: none !important; 
-                -ms-overflow-style: none !important; 
-                
+                scrollbar-width: none !important;
+                -ms-overflow-style: none !important;
+
                 /* === 核心修改：定义气泡间距变量，并应用 === */
-                --mobile-gap: 32px; /* 你以后只要改这个数值，调整气泡间距 */
-                gap: var(--mobile-gap) !important; 
+                --mobile-gap: 32px;
+                /* 你以后只要改这个数值，调整气泡间距 */
+                gap: var(--mobile-gap) !important;
             }
 
             /* === 新增：强制固定时间线与气泡的距离 === */
@@ -1517,7 +1539,7 @@ body.dark-mode button {
             transition: none !important;
         }
 
-        
+
 
         /* =========================================
            🌗 新增：Aqua 平滑主题过渡系统 (Theme Transition)
@@ -1764,8 +1786,6 @@ body.dark-mode button {
             /* 增加一点点 Aqua 风格的投影 */
             filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1));
         }
-
-        
     </style>
     <script>
 
@@ -1917,11 +1937,11 @@ body.dark-mode button {
             <div class="message-row">
                 <div class="avatar ai-avatar">AI</div>
                 <div class="bubble ai-bubble">
-                    你好！我是融合大模型与本地逻辑的AI<br>
+                    你好！我是融合大模型与本地逻辑的AI。<br>
                     <br>
                     试试问我：
                     <ul>
-                        <li>“人类存在的意义是什么？”</li>
+                        <li>“人类存在的意义是什么”</li>
                         <li>“讲个笑话”</li>
                     </ul>
                     <div class="similarity-score">系统消息</div>
