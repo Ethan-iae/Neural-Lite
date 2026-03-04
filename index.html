@@ -412,9 +412,20 @@
         }
 
         /* =========================================
-   新增：时间分割线样式
-   ========================================= */
+           新增：时间分割线样式 (回归原始干瘪像素感)
+           ========================================= */
         .time-divider {
+            /* 1. 强制退回系统原生字体，跳过我们挂载的高清 Classic-Lucida */
+            font-family: "Lucida Grande", "Lucida Sans Unicode", "STHeiti", "华文黑体", Helvetica, Arial, sans-serif;
+
+            /* 2. 剥离全局的发胖阴影和宽字距，恢复小字号的脆弱感 */
+            text-shadow: 0 0 0.3px rgba(0, 0, 0, 0.35) !important;
+            letter-spacing: normal !important;
+
+            /* 3. 恢复浏览器默认的锯齿渲染，拒绝过度平滑 */
+            -webkit-font-smoothing: auto !important;
+            -moz-osx-font-smoothing: auto !important;
+
             display: flex;
             align-items: center;
             text-align: center;
@@ -430,7 +441,6 @@
             content: '';
             flex: 1;
             border-bottom: 1px solid #d0d0d0f4;
-            /* 浅色模式线条颜色 */
         }
 
         .time-divider::before {
@@ -444,6 +454,7 @@
         /* 暗色模式适配 */
         body.dark-mode .time-divider {
             color: #666;
+            text-shadow: 0 0 0.3px rgba(255, 255, 255, 0.25) !important;
         }
 
         body.dark-mode .time-divider::before,
@@ -582,12 +593,18 @@
             border: 1px solid #777;
             border-bottom-color: #999;
             color: #333;
-            padding: 4.3px 12px;
+
+            /* 👇 1. 取消上下的 padding，只保留左右的 12px */
+            padding: 0 12px;
+
+            /* 👇 2. 新增：强制锁定电脑端高度为 28px，完美对齐右侧的发送按钮 */
+            height: 30px;
+            box-sizing: border-box;
+
             border-radius: 3px;
             outline: none;
             font-size: 13px;
             box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.5);
-            /* 新增这一行 */
         }
 
         /* === 新增：强制隐藏 type="search" 自带的清除按钮和外观 === */
@@ -826,6 +843,7 @@
                 */
                 margin-top: calc(35px - var(--mobile-gap)) !important;
                 margin-bottom: calc(35px - var(--mobile-gap)) !important;
+                font-size: 11.5px !important;
             }
 
             /* 3. 隐藏 Webkit 内核（苹果 Safari、谷歌 Chrome、所有手机自带浏览器）的滚动条 */
@@ -851,6 +869,7 @@
                 /* 取消左边距计算 */
                 margin: 0;
                 /* 清除可能存在的外边距 */
+                letter-spacing: -0.2px !important;
             }
 
             /* === 新增：手机端恢复标题点击 === */
@@ -1785,6 +1804,31 @@
             display: inline-block;
             /* 增加一点点 Aqua 风格的投影 */
             filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1));
+        }
+
+        /* =========================================
+           修复：暗色模式下强制加深手机端“发送”与弹窗“清除”按钮
+           ========================================= */
+        body.dark-mode .modal-buttons button.primary,
+        body.dark-mode .input-box button.primary {
+            /* 替换为深邃的暗夜蓝拉丝金属色 */
+            background: linear-gradient(to bottom, #2c4463 0%, #182a40 100%) !important;
+            border: 1px solid #0a131d !important;
+            color: #d0d8e0 !important;
+            text-shadow: 0 -1px 0 #000 !important;
+            /* 降低高光亮度，增加深沉感 */
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+            /* 如果不需要多余的背景图案，可以清除掉 */
+            background-image: linear-gradient(to bottom, #2c4463 0%, #182a40 100%) !important;
+        }
+
+        /* 按钮按下去的深色状态 */
+        body.dark-mode .modal-buttons button.primary:active,
+        body.dark-mode .input-box button.primary:active,
+        body.dark-mode .input-box button.primary.pressed {
+            background: linear-gradient(to bottom, #111e2e 0%, #192b40 100%) !important;
+            box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6) !important;
+            border-color: #000 !important;
         }
     </style>
     <script>
