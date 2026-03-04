@@ -6,6 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Neural-Lite</title>
     <style>
+        /* 必须让基础容器占满全屏 */
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            /* 防止双滚动条 */
+        }
+
         /* 绝对的极简黑白风，不使用任何老浏览器看不懂的 flex 布局 */
         body {
             background-color: #ffffff;
@@ -25,10 +35,13 @@
 
         /* 聊天框：带黑色边框，超出可滚动 */
         #chat {
-            height: 350px;
+            height: 70%;
+            /* 这里的 70% 会根据手机屏幕高度自动伸缩 */
+            width: 95%;
+            /* 宽度自适应 */
+            margin: 0 auto 10px auto;
             overflow-y: auto;
             border: 1px solid #000000;
-            margin-bottom: 10px;
             padding: 5px;
             background: #fafafa;
         }
