@@ -3,8 +3,8 @@ export async function onRequest(context) {
   
   // ==========================================
   // 在这里修改为你想要的用户名和密码
-  const USERNAME = "admin";
-  const PASSWORD = "mysecretpassword"; 
+  const USERNAME = "a";
+  const PASSWORD = "a"; 
   // ==========================================
 
   // 获取请求头中的 Authorization 信息
