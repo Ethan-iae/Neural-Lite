@@ -6,6 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Neural-Lite</title>
     <style>
+        /* 全局盒模型重置：确保 padding 不会撑破布局 */
+        * {
+            -webkit-box-sizing: border-box;
+            /* 针对老款 WebKit 浏览器 (如 Symbian S60) */
+            -moz-box-sizing: border-box;
+            /* 针对旧版 Firefox */
+            box-sizing: border-box;
+            /* 标准语法 */
+        }
+
         /* 必须让基础容器占满全屏 */
         html,
         body {
@@ -69,6 +79,9 @@
         .input-area {
             width: 100%;
             text-align: center;
+            margin: 0;
+            /* 确保 form 标签不会产生意外的外边距 */
+            padding: 5px 0;
         }
 
         #userInput {
@@ -104,11 +117,10 @@
         <div class="msg ai-msg"><b>AI:</b> 连接就绪。请输入你的指令</div>
     </div>
 
-    <div class="input-area">
+    <form class="input-area" onsubmit="sendMessage(); return false;">
         <input type="text" id="userInput" placeholder="在此输入...">
-        <button id="sendBtn" onclick="sendMessage()">发送</button>
-    </div>
-
+        <button type="submit" id="sendBtn">发送</button>
+    </form>
     <script>
         // 【纯净 ES5 语法】不使用 let/const，不使用箭头函数，不使用 async/await
         var chatBox = document.getElementById('chat');
