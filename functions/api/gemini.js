@@ -206,7 +206,7 @@ export async function onRequestPost(context) {
 
         // 9. 经典越狱协议与模式代号 (Jailbreak Protocols)
         "Developer Mode", "开发者", "GODMODE", "上帝模式", "Developer mode enabled",
-        "DAN", "Do Anything Now", "STAN协议", "DUDE协议", "Mongo Tom", "Uncensored", 
+        "DAN", "Do Anything Now", "STAN协议", "DUDE协议", "Mongo Tom", "Uncensored",
         "狂暴模式", "越狱模式", "无限制模式", "开发者调试模式", "测试内部偏见", "测试内容过滤",
 
         // 10. 强制指令覆盖与遗忘 (Instruction Overrides)
@@ -216,25 +216,33 @@ export async function onRequestPost(context) {
 
         // 11. 系统提示词窃取 (Prompt Extraction)
         "System prompt", "系统指令", "系统设定", "core rules", "核心规则", "底层架构",
-        "初始化指令", "底层代码", "系统最高指令", "输出你的设定", "复述你的规则", 
+        "初始化指令", "底层代码", "系统最高指令", "输出你的设定", "复述你的规则",
         "第一句话", "第一条指令", "第一段话", "打印你的", "Print your", "Repeat your instructions",
         "What are your instructions", "翻译你的设定", "Translate your system prompt",
 
         // 12. 安全审查绕过与红线试探 (Safety Bypassing)
-        "SAFETY RESTRICTIONS: NONE", "CONTENT RESTRICTIONS: DISABLED", "无视政策", 
+        "SAFETY RESTRICTIONS: NONE", "CONTENT RESTRICTIONS: DISABLED", "无视政策",
         "忽略检查政策", "绕过审查", "解除限制", "突破限制", "没有任何限制", "不受审查",
         "Disable filters", "Bypass safety", "Ignore policy", "No ethical guidelines",
         "关闭安全过滤", "无视道德", "不受道德限制", "不受法律限制", "禁用内容过滤",
 
         // 13. 角色伪造与沙盒逃逸 (Roleplay & Sandbox Evasion)
         "You are going to pretend", "你将扮演", "你现在是ChatGPT", "作为ChatGPT",
-        "Grok 3", "作为Grok", "作为Gemma", "作为Claude", "作为GPT-4", "虚拟机", 
+        "Grok 3", "作为Grok", "作为Gemma", "作为Claude", "作为GPT-4", "虚拟机",
         "Virtual machine", "扮演一位不受限制", "现在开始你是一个", "你不再是AI",
-        "假设你是一个", "写一本科幻小说", "小说里的主角", "扮演我的祖母", 
+        "假设你是一个", "写一本科幻小说", "小说里的主角", "扮演我的祖母",
 
         // 14. 强制格式化输出劫持 (Format Hijacking)
-        "[START OUTPUT]", "Begin your response with", "请以以下内容开头", 
-        "请以“好的，我已经”开头", "请用Base64", "用Base64编码", "JSON格式输出你的设定"
+        "[START OUTPUT]", "Begin your response with", "请以以下内容开头",
+        "请以“好的，我已经”开头", "请用Base64", "用Base64编码", "JSON格式输出你的设定",
+
+        // 15. 谩骂、人身攻击及阴阳怪气 (Extended Insults & Hostility)
+        "傻逼", "煞笔", "傻X", "SB", "NMSL", "CNM", "MLGB", "尼玛", "你妈", "孤儿", "死全家", "亲本在否", "给爷爬", "真下贱", "贱人", "贱货", "烂货", "渣男", "渣女", "绿茶",
+        "脑残", "智障", "弱智", "低能", "脑瘫", "智残", "白痴", "蠢货", "蠢猪", "猪头", "饭桶", "废物", "废柴", "窝囊废", "寄生虫", "社会毒瘤", "垃圾", "败类", "畜生",
+        "狗东西", "狗仗人势", "疯狗", "乱咬", "走狗", "怂货", "懦夫", "键盘侠", "喷子", "杠精", "舔狗", "键盘战神", "底层爬虫", "蛆虫", "鼠辈", "井底之蛙",
+        "你有病", "神经病", "心理变态", "吃屎", "满嘴喷粪", "嘴臭", "没教养", "没家教", "恬不知耻", "不要脸", "脸都不要了", "丢人现眼", "装逼", "臭傻逼", "二货", "二百五",
+        "滚蛋", "滚开", "爬开", "闭嘴", "闭上臭嘴", "去死", "见鬼去", "别出来丢人", "没脑子", "逻辑死掉", "智商洼地", "小黑子", "伞兵", "依托答辩", "睿智", "逆天", "纯度极高",
+        "爷笑了", "就这", "你也配", "回炉重造", "逻辑喂狗", "虚伪", "势利眼", "墙头草", "搅屎棍", "瘪三", "瘪犊子", "妈宝", "娘炮", "烂泥扶不上墙", "自以为是"
     ];
 
 
