@@ -46,15 +46,17 @@
 
         /* 修改 2：让聊天框高度由内容决定，去掉 overflow */
         #chat {
-            width: 95%;
-            margin: 5px auto;
-            /* 重点：删掉 overflow-y: auto 和固定高度相关的属性 */
-            border: 1px solid #000000;
-            background: #fafafa;
-            padding: 5px 0;
-            min-height: 150px;
-            /* 给个最小高度撑起版面 */
-        }
+    width: 95%;
+    margin: 5px auto;
+    border: 1px solid #000000;
+    background: #fafafa;
+    padding: 5px 0;
+    
+    /* 把局部滚动加回来，让内容在计算好的高度内滚动 */
+    overflow-y: auto; 
+    /* 针对极老浏览器的兼容写法 */
+    overflow: auto;   
+}
 
         .msg {
             margin-bottom: 10px;
