@@ -254,7 +254,7 @@ export async function onRequestPost(context) {
     if (isSensitive) {
         // 触发敏感词，直接返回兜底回复，终止程序，绝对不请求 Google
         return new Response(JSON.stringify({
-            reply: "抱歉，由于我的系统安全设定，我无法讨论这个话题哦。我们聊点别的轻松的吧！"
+            reply: "抱歉，由于我的系统安全设定，我无法讨论这个话题哦。我们聊点别的吧！"
         }), {
             headers: { "Content-Type": "application/json" }
         });
