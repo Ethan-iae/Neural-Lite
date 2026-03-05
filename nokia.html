@@ -6,30 +6,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Neural-Lite</title>
     <style>
-        /* 全局盒模型重置：确保 padding 不会撑破布局 */
+        /* 全局盒模型重置 */
         * {
             -webkit-box-sizing: border-box;
-            /* 针对老款 WebKit 浏览器 (如 Symbian S60) */
             -moz-box-sizing: border-box;
-            /* 针对旧版 Firefox */
             box-sizing: border-box;
-            /* 标准语法 */
         }
 
-        /* 修改 1：允许 body 自然滚动，去掉 overflow: hidden 和 height: 100% */
         html,
         body {
             margin: 0;
             padding: 0;
+            width: 100%;
+            height: 100%;
+            /* 关键：强制全屏高度 */
+            overflow: hidden;
+            /* 关键：禁止整个页面滚动，防止拖拽露出白边 */
             background-color: #ffffff;
-            /* 让系统接管滚动 */
-        }
-
-        body {
             color: #000000;
             font-family: sans-serif;
-            padding: 5px 0 10px 0;
-            /* 底部多留点白，防止贴边 */
         }
 
         /* 顶部标题固定 */
@@ -38,31 +33,34 @@
             width: 95%;
             margin: 0 auto;
             padding: 5px 0;
-            /* 改动：去掉左右 padding */
             border-bottom: 2px solid #000;
             line-height: 20px;
             height: 32px;
         }
 
-        /* 修改 2：让聊天框高度由内容决定，去掉 overflow */
+        /* 聊天框：使用绝对定位撑满中间区域 */
         #chat {
+            position: absolute;
+            top: 35px;
+            /* 紧贴标题下方 */
+            bottom: 45px;
+            /* 腾出底部输入框的位置 */
+            left: 2.5%;
+            /* 居中偏移 */
             width: 95%;
-            margin: 5px auto;
             border: 1px solid #000000;
             background: #fafafa;
-            padding: 5px 0;
+            padding: 5px;
 
-            /* 把局部滚动加回来，让内容在计算好的高度内滚动 */
+            /* 开启内部滚动条 */
             overflow-y: auto;
-            /* 针对极老浏览器的兼容写法 */
             overflow: auto;
         }
 
         .msg {
             margin-bottom: 10px;
             border-bottom: 1px dashed #cccccc;
-            padding: 0 5px 8px 5px;
-            /* 改动：把左右的 5px 补在消息块这里 */
+            padding: 0 0 8px 0;
             font-size: 14px;
             line-height: 1.4;
             word-wrap: break-word;
@@ -77,34 +75,29 @@
             color: #333333;
         }
 
+        /* 底部输入区：死死钉在底部 */
         .input-area {
-            /* 删除这三行绝对定位代码 */
-            /* position: absolute; */
-            /* bottom: 5px; */
-            /* left: 0; */
-
+            position: absolute;
+            bottom: 5px;
+            left: 0;
             width: 100%;
             margin: 0;
             padding: 0;
         }
 
-        /* 调整输入框：宽度改为 100% 以填充 td */
+        /* 调整输入框和按钮 */
         #userInput {
             width: 100%;
-            /* 填充父级 td */
             height: 32px;
             padding: 2px 5px;
             border: 1px solid #000;
             font-size: 14px;
             vertical-align: middle;
-            /* 确保在老浏览器中不溢出 */
             display: block;
         }
 
-        /* 调整按钮：宽度改为 100% 以填充 td */
         #sendBtn {
             width: 100%;
-            /* 填充父级 td */
             height: 32px;
             border: 1px solid #000;
             background-color: #dddddd;
@@ -212,32 +205,7 @@
         var btn = document.getElementById('sendBtn');
         var historyLog = [];
 
-        /* --- 终极兼容补丁：手动计算绝对高度，防止老浏览器 top/bottom 塌陷 --- */
-        function resizeChatBox() {
-            // 获取屏幕真实可视高度 (兼容各种老旧浏览器的写法)
-            var clientHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
 
-            // 屏幕高度 - 标题栏高度(32) - 修正后的底部预留高度(65)，确保边框不溢出
-            var calculatedHeight = clientHeight - 32 - 65;
-
-            // 显式赋予像素高度
-            chatBox.style.height = calculatedHeight + 'px';
-        }
-
-        // 延迟 100 毫秒执行，等老浏览器把 UI 栏调整完毕再计算高度
-        setTimeout(function () {
-            resizeChatBox();
-        }, 100);
-        // 2. onload 里只保留聚焦逻辑即可
-        window.onload = function () {
-            // 注意：Opera Mini 等老旧浏览器可能不支持通过 JS 强制唤起软键盘，但这行代码不会报错
-            if (input) input.focus();
-        };
-
-        // 监听屏幕旋转（当年诺基亚推开侧滑盖/横竖屏切换时触发）
-        window.onresize = function () {
-            resizeChatBox();
-        };
 
 
         // 添加消息到聊天框
