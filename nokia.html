@@ -115,6 +115,13 @@
             color: #fff;
         }
 
+        input,
+        button {
+            border-radius: 0;
+        }
+
+        /* 老浏览器不支持圆角，去掉可以省下渲染开销 */
+
         /* 强制消除标题顶部的默认留白 */
         h2 {
             margin-top: 0px;
@@ -135,7 +142,8 @@
         <table style="width: 95%; margin: 0 auto; table-layout: fixed;" cellspacing="0" cellpadding="0" border="0">
             <tr>
                 <td style="width: 76%; padding-right: 2px;">
-                    <input type="text" id="userInput" placeholder="在此输入..." spellcheck="false">
+                    <input type="text" id="userInput" placeholder="在此输入..." spellcheck="false" autocorrect="off"
+                        autocapitalize="off" autocomplete="off">
                 </td>
                 <td style="width: 24%;">
                     <button type="submit" id="sendBtn">发送</button>
@@ -144,6 +152,55 @@
         </table>
     </form>
     <script>
+
+        // 针对极老浏览器可能没有 XMLHttpRequest 的情况
+        if (typeof XMLHttpRequest === "undefined") {
+            window.XMLHttpRequest = function () {
+                try { return new ActiveXObject("Msxml2.XMLHTTP.6.0"); } catch (e) { }
+                try { return new ActiveXObject("Msxml2.XMLHTTP.3.0"); } catch (e) { }
+                try { return new ActiveXObject("Microsoft.XMLHTTP"); } catch (e) { }
+                throw new Error("此浏览器不支持 AJAX");
+            };
+        }
+        // --- 2005 级硬件兼容补丁 ---
+        if (!window.JSON) {
+            window.JSON = {
+                // 解析 JSON：利用 eval 的原始力量
+                parse: function (sJSON) {
+                    try {
+                        // 安全起见，加上括号确保 eval 将其视为表达式而非代码块
+                        return eval('(' + sJSON + ')');
+                    } catch (e) {
+                        return null;
+                    }
+                },
+                // 序列化 JSON：手动递归实现（2005年还没有简单的 stringify）
+                stringify: function (v) {
+                    var i, s = "", len;
+                    if (v === null) return "null";
+                    if (typeof v === 'number' || typeof v === 'boolean') return v.toString();
+                    if (typeof v === 'string') return '"' + v.replace(/"/g, '\\"') + '"';
+
+                    if (v instanceof Array) {
+                        len = v.length;
+                        for (i = 0; i < len; i++) {
+                            s += (s ? "," : "") + this.stringify(v[i]);
+                        }
+                        return "[" + s + "]";
+                    }
+                    if (typeof v === 'object') {
+                        for (i in v) {
+                            if (v.hasOwnProperty(i)) {
+                                s += (s ? "," : "") + '"' + i + '":' + this.stringify(v[i]);
+                            }
+                        }
+                        return "{" + s + "}";
+                    }
+                    return "";
+                }
+            };
+        }
+        // --- 补丁结束 ---
         // 【纯净 ES5 语法】不使用 let/const，不使用箭头函数，不使用 async/await
         var chatBox = document.getElementById('chat');
         var input = document.getElementById('userInput');
@@ -167,8 +224,8 @@
             // 滚动到底部
             chatBox.scrollTop = chatBox.scrollHeight;
             /* --- 优化 3：清理老旧 DOM 节点 --- */
-            // 如果消息超过 15 条，移除最早的一条，防止诺基亚浏览器崩溃
-            if (chatBox.childNodes.length > 15) {
+            // 如果消息超过 10 条，移除最早的一条，防止诺基亚浏览器崩溃
+            if (chatBox.childNodes.length > 10) {
                 chatBox.removeChild(chatBox.childNodes[0]);
             }
 
