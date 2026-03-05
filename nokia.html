@@ -33,42 +33,41 @@
             color: #000000;
             font-family: sans-serif;
             margin: 0;
-            padding: 5px;
+            padding: 5px 0;
+            /* 改动：去掉水平方向的内边距，防止撑破或者错位 */
         }
 
         /* 顶部标题固定 */
         h2 {
             font-size: 16px;
-            margin: 0;
-            padding: 5px;
+            width: 95%;
+            margin: 0 auto;
+            padding: 5px 0;
+            /* 改动：去掉左右 padding */
             border-bottom: 2px solid #000;
             line-height: 20px;
             height: 32px;
-            /* 明确高度 */
         }
 
         /* 中间聊天框绝对定位，自动拉伸 */
         #chat {
             position: absolute;
             top: 32px;
-            /* 标题的高度 */
-            bottom: 45px;
-            /* 底部输入框留出的高度 */
             left: 2.5%;
-            /* 配合 width: 95% 居中 */
             width: 95%;
             margin: 5px 0;
             overflow-y: auto;
             border: 1px solid #000000;
-            padding: 5px;
             background: #fafafa;
+            padding: 5px 0;
+            /* 改动：去掉左右 padding，防止撑破 95% 宽度 */
         }
 
-        /* 消息样式 */
         .msg {
             margin-bottom: 10px;
             border-bottom: 1px dashed #cccccc;
-            padding-bottom: 8px;
+            padding: 0 5px 8px 5px;
+            /* 改动：把左右的 5px 补在消息块这里 */
             font-size: 14px;
             line-height: 1.4;
             word-wrap: break-word;
@@ -149,7 +148,7 @@
         <div class="msg ai-msg"><b>AI:</b> 连接就绪。请输入你的指令</div>
     </div>
 
-    <form class="input-area" onsubmit="sendMessage(); return false;">
+    <form class="input-area" action="javascript:void(0);" onsubmit="sendMessage(); return false;">
         <table style="width: 95%; margin: 0 auto; table-layout: fixed;" cellspacing="0" cellpadding="0" border="0">
             <tr>
                 <td style="width: 76%; padding-right: 2px;">
@@ -255,9 +254,11 @@
             // 滚动到底部
             chatBox.scrollTop = chatBox.scrollHeight;
             /* --- 优化 3：清理老旧 DOM 节点 --- */
-            // 如果消息超过 10 条，移除最早的一条，防止诺基亚浏览器崩溃
-            if (chatBox.childNodes.length > 10) {
-                chatBox.removeChild(chatBox.childNodes[0]);
+            // 使用 getElementsByTagName 获取真实的 div 节点，而不是包含文本/空格的 childNodes
+            var msgDivs = chatBox.getElementsByTagName('div');
+            // 限制在 10 条消息以内
+            if (msgDivs.length > 10) {
+                chatBox.removeChild(msgDivs[0]);
             }
 
         }
