@@ -16,25 +16,20 @@
             /* 标准语法 */
         }
 
-        /* 保证基础容器满屏 */
+        /* 修改 1：允许 body 自然滚动，去掉 overflow: hidden 和 height: 100% */
         html,
         body {
-            height: 100%;
             margin: 0;
             padding: 0;
-            overflow: hidden;
-            position: relative;
-            /* 为绝对定位做参照 */
+            background-color: #ffffff;
+            /* 让系统接管滚动 */
         }
 
-        /* 绝对的极简黑白风，不使用任何老浏览器看不懂的 flex 布局 */
         body {
-            background-color: #ffffff;
             color: #000000;
             font-family: sans-serif;
-            margin: 0;
-            padding: 5px 0;
-            /* 改动：去掉水平方向的内边距，防止撑破或者错位 */
+            padding: 5px 0 10px 0;
+            /* 底部多留点白，防止贴边 */
         }
 
         /* 顶部标题固定 */
@@ -49,18 +44,16 @@
             height: 32px;
         }
 
-        /* 中间聊天框绝对定位，自动拉伸 */
+        /* 修改 2：让聊天框高度由内容决定，去掉 overflow */
         #chat {
-            position: absolute;
-            top: 32px;
-            left: 2.5%;
             width: 95%;
-            margin: 5px 0;
-            overflow-y: auto;
+            margin: 5px auto;
+            /* 重点：删掉 overflow-y: auto 和固定高度相关的属性 */
             border: 1px solid #000000;
             background: #fafafa;
             padding: 5px 0;
-            /* 改动：去掉左右 padding，防止撑破 95% 宽度 */
+            min-height: 150px;
+            /* 给个最小高度撑起版面 */
         }
 
         .msg {
@@ -82,12 +75,12 @@
             color: #333333;
         }
 
-        /* 输入区 */
-        /* 底部输入框绝对定位 */
         .input-area {
-            position: absolute;
-            bottom: 5px;
-            left: 0;
+            /* 删除这三行绝对定位代码 */
+            /* position: absolute; */
+            /* bottom: 5px; */
+            /* left: 0; */
+
             width: 100%;
             margin: 0;
             padding: 0;
