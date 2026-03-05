@@ -224,9 +224,12 @@
             chatBox.style.height = calculatedHeight + 'px';
         }
 
-        // 页面加载完毕后执行计算，并尝试聚焦
+        // 1. 立即执行！由于脚本在 body 底部，此时 DOM 已就绪。
+        // 这样会在浏览器进行最终画面绘制前就把高度定好，彻底消除闪烁。
+        resizeChatBox();
+
+        // 2. onload 里只保留聚焦逻辑即可
         window.onload = function () {
-            resizeChatBox();
             // 注意：Opera Mini 等老旧浏览器可能不支持通过 JS 强制唤起软键盘，但这行代码不会报错
             if (input) input.focus();
         };
