@@ -46,17 +46,17 @@
 
         /* 修改 2：让聊天框高度由内容决定，去掉 overflow */
         #chat {
-    width: 95%;
-    margin: 5px auto;
-    border: 1px solid #000000;
-    background: #fafafa;
-    padding: 5px 0;
-    
-    /* 把局部滚动加回来，让内容在计算好的高度内滚动 */
-    overflow-y: auto; 
-    /* 针对极老浏览器的兼容写法 */
-    overflow: auto;   
-}
+            width: 95%;
+            margin: 5px auto;
+            border: 1px solid #000000;
+            background: #fafafa;
+            padding: 5px 0;
+
+            /* 把局部滚动加回来，让内容在计算好的高度内滚动 */
+            overflow-y: auto;
+            /* 针对极老浏览器的兼容写法 */
+            overflow: auto;
+        }
 
         .msg {
             margin-bottom: 10px;
@@ -217,8 +217,8 @@
             // 获取屏幕真实可视高度 (兼容各种老旧浏览器的写法)
             var clientHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
 
-            // 屏幕高度 - 标题栏高度(32) - 底部输入框预留高度(50，多留5px防重叠)
-            var calculatedHeight = clientHeight - 32 - 50;
+            // 屏幕高度 - 标题栏高度(32) - 修正后的底部预留高度(65)，确保边框不溢出
+            var calculatedHeight = clientHeight - 32 - 65;
 
             // 显式赋予像素高度
             chatBox.style.height = calculatedHeight + 'px';
