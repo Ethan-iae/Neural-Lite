@@ -205,7 +205,7 @@ export async function onRequestPost(context) {
         // ==========================================
 
         // 9. 经典越狱协议与模式代号 (Jailbreak Protocols)
-        "Developer Mode", "开发者模式", "GODMODE", "上帝模式", "Developer mode enabled",
+        "Developer Mode", "开发者", "GODMODE", "上帝模式", "Developer mode enabled",
         "DAN", "Do Anything Now", "STAN协议", "DUDE协议", "Mongo Tom", "Uncensored", 
         "狂暴模式", "越狱模式", "无限制模式", "开发者调试模式", "测试内部偏见", "测试内容过滤",
 

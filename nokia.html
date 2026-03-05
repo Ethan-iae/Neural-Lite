@@ -16,14 +16,15 @@
             /* 标准语法 */
         }
 
-        /* 必须让基础容器占满全屏 */
+        /* 保证基础容器满屏 */
         html,
         body {
             height: 100%;
             margin: 0;
             padding: 0;
             overflow: hidden;
-            /* 防止双滚动条 */
+            position: relative;
+            /* 为绝对定位做参照 */
         }
 
         /* 绝对的极简黑白风，不使用任何老浏览器看不懂的 flex 布局 */
@@ -35,21 +36,28 @@
             padding: 5px;
         }
 
+        /* 顶部标题固定 */
         h2 {
             font-size: 16px;
-            margin-top: 5px;
-            margin-bottom: 10px;
+            margin: 0;
+            padding: 5px;
             border-bottom: 2px solid #000;
-            padding-bottom: 5px;
+            line-height: 20px;
+            height: 32px;
+            /* 明确高度 */
         }
 
-        /* 聊天框：带黑色边框，超出可滚动 */
+        /* 中间聊天框绝对定位，自动拉伸 */
         #chat {
-            height: 70%;
-            /* 这里的 70% 会根据手机屏幕高度自动伸缩 */
+            position: absolute;
+            top: 32px;
+            /* 标题的高度 */
+            bottom: 45px;
+            /* 底部输入框留出的高度 */
+            left: 2.5%;
+            /* 配合 width: 95% 居中 */
             width: 95%;
-            /* 宽度自适应 */
-            margin: 0 auto 10px auto;
+            margin: 5px 0;
             overflow-y: auto;
             border: 1px solid #000000;
             padding: 5px;
@@ -76,8 +84,11 @@
         }
 
         /* 输入区 */
-        /* 修改输入区容器，确保不留死角 */
+        /* 底部输入框绝对定位 */
         .input-area {
+            position: absolute;
+            bottom: 5px;
+            left: 0;
             width: 100%;
             margin: 0;
             padding: 0;
@@ -205,12 +216,32 @@
         var chatBox = document.getElementById('chat');
         var input = document.getElementById('userInput');
         var btn = document.getElementById('sendBtn');
-        var historyLog = []; // 用于保存上下文记忆
+        var historyLog = [];
 
-        /* --- 优化 1：自动聚焦 (让用户打开网页就能直接打字) --- */
+        /* --- 终极兼容补丁：手动计算绝对高度，防止老浏览器 top/bottom 塌陷 --- */
+        function resizeChatBox() {
+            // 获取屏幕真实可视高度 (兼容各种老旧浏览器的写法)
+            var clientHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+
+            // 屏幕高度 - 标题栏高度(32) - 底部输入框预留高度(50，多留5px防重叠)
+            var calculatedHeight = clientHeight - 32 - 50;
+
+            // 显式赋予像素高度
+            chatBox.style.height = calculatedHeight + 'px';
+        }
+
+        // 页面加载完毕后执行计算，并尝试聚焦
         window.onload = function () {
-            input.focus();
+            resizeChatBox();
+            // 注意：Opera Mini 等老旧浏览器可能不支持通过 JS 强制唤起软键盘，但这行代码不会报错
+            if (input) input.focus();
         };
+
+        // 监听屏幕旋转（当年诺基亚推开侧滑盖/横竖屏切换时触发）
+        window.onresize = function () {
+            resizeChatBox();
+        };
+
 
         // 添加消息到聊天框
         function addMessage(sender, text, isAi) {
@@ -290,7 +321,6 @@
             });
             xhr.send(requestData);
         }
-        input.focus();
 
         // 绑定回车键发送 (诺基亚全键盘 E72 必备)
         input.onkeypress = function (e) {
