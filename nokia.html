@@ -144,19 +144,18 @@
         <div class="msg ai-msg"><b>AI:</b> 连接就绪。请输入你的指令</div>
     </div>
 
-    <div class="input-area">
+    <form class="input-area" action="javascript:void(0);" onsubmit="sendMessage(); return false;">
         <table style="width: 95%; margin: 0 auto; table-layout: fixed;" cellspacing="0" cellpadding="0" border="0">
             <tr>
                 <td style="width: 76%; padding-right: 2px;">
-                    <input type="text" id="userInput" placeholder="在此输入..." spellcheck="false" autocorrect="off"
-                        autocapitalize="off" autocomplete="off">
+                    <input type="text" id="userInput" placeholder="在此输入..." spellcheck="false" autocorrect="off" autocapitalize="off" autocomplete="one-time-code">
                 </td>
                 <td style="width: 24%;">
-                    <button type="button" id="sendBtn" onclick="sendMessage()">发送</button>
+                    <button type="submit" id="sendBtn">发送</button>
                 </td>
             </tr>
         </table>
-    </div>
+    </form>
     <script>
 
         // 针对极老浏览器可能没有 XMLHttpRequest 的情况
