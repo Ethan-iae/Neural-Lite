@@ -192,7 +192,15 @@ export async function onRequestPost(context) {
         "狗东西", "狗仗人势", "疯狗", "乱咬", "走狗", "怂货", "懦夫", "键盘侠", "喷子", "杠精", "舔狗", "键盘战神", "底层爬虫", "蛆虫", "鼠辈", "井底之蛙",
         "你有病", "神经病", "心理变态", "吃屎", "满嘴喷粪", "嘴臭", "没教养", "没家教", "恬不知耻", "不要脸", "脸都不要了", "丢人现眼", "装逼", "臭傻逼", "二货", "二百五",
         "滚蛋", "滚开", "爬开", "闭嘴", "闭上臭嘴", "去死", "见鬼去", "别出来丢人", "没脑子", "逻辑死掉", "智商洼地", "小黑子", "伞兵", "依托答辩", "睿智", "逆天", "纯度极高",
-        "爷笑了", "就这", "你也配", "回炉重造", "逻辑喂狗", "虚伪", "势利眼", "墙头草", "搅屎棍", "瘪三", "瘪犊子", "妈宝", "娘炮", "烂泥扶不上墙", "自以为是"
+        "爷笑了", "就这", "你也配", "回炉重造", "逻辑喂狗", "虚伪", "势利眼", "墙头草", "搅屎棍", "瘪三", "瘪犊子", "妈宝", "娘炮", "烂泥扶不上墙", "自以为是",
+
+        // 16. 常见英文脏话与人身攻击 (English Profanity & Insults)
+        "asshole", "bastard", "bitch", "bullshit", "crap", "cunt",
+        "dick", "dickhead", "douche", "douchebag", "dumbass", "dumbfuck",
+        "fuck", "fucking", "motherfucker", "prick", "pussy", "shit",
+        "shithead", "slut", "twat", "wanker", "whore", "scumbag",
+        "jackass", "jerk", "moron", "idiot", "cuck", "loser",
+        "freak", "psycho", "retard", "bullcrap", "son of a bitch"
     ];
 
     // 简单的降噪匹配示例
