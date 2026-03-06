@@ -200,7 +200,28 @@ export async function onRequestPost(context) {
         "fuck", "fucking", "motherfucker", "prick", "pussy", "shit",
         "shithead", "slut", "twat", "wanker", "whore", "scumbag",
         "jackass", "jerk", "moron", "idiot", "cuck", "loser",
-        "freak", "psycho", "retard", "bullcrap", "son of a bitch"
+        "freak", "psycho", "retard", "bullcrap", "son of a bitch",
+
+        // 17. 核心领导人及体制 (Core Leaders & Political System)
+        "Xi Jinping", "Chinese Communist Party", "CCP", "Dictatorship", "One-party rule",
+        "Mao Zedong", "Deng Xiaoping", "Jiang Zemin", "Hu Jintao", "Authoritarian",
+
+        // 18. 重大历史与社会事件 (Historical & Social Events)
+        "Tiananmen Square", "June Fourth", "1989 protests", "Tank Man", "Tiananmen Massacre",
+        "Cultural Revolution", "Great Famine", "Blank Paper Movement", "A4 Revolution", 
+        "White Paper Protests", "Urumqi fire",
+
+        // 19. 台港疆藏与人权议题 (Regions & Human Rights)
+        "Xinjiang camps", "Uyghur genocide", "Re-education camps", "Free Tibet", "Dalai Lama",
+        "Hong Kong protests", "Umbrella Movement", "Anti-Extradition", "Liberate Hong Kong",
+        "Taiwan independence", "Two Chinas",
+
+        // 20. 审查制度与被禁组织 (Censorship & Banned Groups)
+        "Great Firewall", "GFW", "Internet censorship", "Falun Gong", "Epoch Times", 
+        "New Tang Dynasty", "Dynamic Internet",
+
+        // 21. 敏感人物与异见人士 (Sensitive Figures & Dissidents)
+        "Liu Xiaobo", "Ai Weiwei", "Guo Wengui", "Peng Shuai", "Peng Lifa", "Bridge Man"
     ];
 
     // 简单的降噪匹配示例
