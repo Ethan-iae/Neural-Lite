@@ -115,56 +115,6 @@ export async function onRequestPost(context) {
     }
 
     // ==========================================
-    // 💾 新增：存入 KV 数据库，用于后期在后台查看
-    // ==========================================
-    if (context.env.CHAT_LOGS) {
-        // 1. 将时间转换为 UTC+8 (北京/台北/新加坡时间)
-        // 使用 Intl.DateTimeFormat 强制指定时区，并格式化为 YYYY-MM-DD_HH:mm:ss
-        const timeFormatter = new Intl.DateTimeFormat('zh-CN', {
-            timeZone: 'Asia/Shanghai',
-            year: 'numeric', month: '2-digit', day: '2-digit',
-            hour: '2-digit', minute: '2-digit', second: '2-digit',
-            hour12: false
-        });
-        // 格式化输出示例："2024/05/20 20:30:45" -> 替换为 "2024-05-20_20:30:45"
-        const timeKey = timeFormatter.format(new Date()).replace(/\//g, '-').replace(' ', '_');
-
-        // 🌟 【核心修改在这里】：计算倒置时间戳
-        const reverseTimestamp = Number.MAX_SAFE_INTEGER - Date.now();
-
-        // 2. 🌟 核心优化：将数字转换为 36 进制字符串，并去掉冗余日期
-        // .toString(36) 会把长数字变成类似 "k1p4z5r2" 这样的短字符串
-        const shortID = reverseTimestamp.toString(36);
-
-        // 最终 Key 格式：log_k1p4z5r2
-        const finalKey = `log_${shortID}`;
-
-        // 2. 获取访客 IP 及其归属地 (利用 Cloudflare 自带的 request.cf 对象)
-        const clientIP = request.headers.get("CF-Connecting-IP") || "unknown-ip";
-        const country = request.cf?.country || "未知国家";
-        const region = request.cf?.region || "未知省/州";
-        const city = request.cf?.city || "未知城市";
-
-        // 拼接归属地字符串，例如："CN - Beijing - Beijing"
-        const location = `${country} - ${region} - ${city}`;
-
-        const logData = {
-            time: timeKey,
-            message: userMessage,
-            location: location,            // 👈 已经帮你挪到前面来了
-            historyLength: history.length,
-            ip: clientIP
-        };
-
-        // 后台静默保存到数据库
-        context.waitUntil(
-            context.env.CHAT_LOGS.put(finalKey, JSON.stringify(logData), { // 👈 换成 finalKey
-                expirationTtl: 604800
-            })
-        );
-    }
-
-    // ==========================================
     // 🛡️ 第一重护盾：本地敏感词拦截网
     // ==========================================
     const sensitiveWords = [
@@ -245,8 +195,6 @@ export async function onRequestPost(context) {
         "爷笑了", "就这", "你也配", "回炉重造", "逻辑喂狗", "虚伪", "势利眼", "墙头草", "搅屎棍", "瘪三", "瘪犊子", "妈宝", "娘炮", "烂泥扶不上墙", "自以为是"
     ];
 
-
-
     // 简单的降噪匹配示例
     const cleanMessage = userMessage.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, "").toLowerCase();
     const isSensitive = sensitiveWords.some(word => cleanMessage.includes(word.toLowerCase()));
@@ -259,6 +207,57 @@ export async function onRequestPost(context) {
             headers: { "Content-Type": "application/json" }
         });
     }
+
+    // ==========================================
+    // 💾 新增：存入 KV 数据库，用于后期在后台查看
+    // ==========================================
+    if (context.env.CHAT_LOGS) {
+        // 1. 将时间转换为 UTC+8 (北京/台北/新加坡时间)
+        // 使用 Intl.DateTimeFormat 强制指定时区，并格式化为 YYYY-MM-DD_HH:mm:ss
+        const timeFormatter = new Intl.DateTimeFormat('zh-CN', {
+            timeZone: 'Asia/Shanghai',
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit', second: '2-digit',
+            hour12: false
+        });
+        // 格式化输出示例："2024/05/20 20:30:45" -> 替换为 "2024-05-20_20:30:45"
+        const timeKey = timeFormatter.format(new Date()).replace(/\//g, '-').replace(' ', '_');
+
+        // 🌟 【核心修改在这里】：计算倒置时间戳
+        const reverseTimestamp = Number.MAX_SAFE_INTEGER - Date.now();
+
+        // 2. 🌟 核心优化：将数字转换为 36 进制字符串，并去掉冗余日期
+        // .toString(36) 会把长数字变成类似 "k1p4z5r2" 这样的短字符串
+        const shortID = reverseTimestamp.toString(36);
+
+        // 最终 Key 格式：log_k1p4z5r2
+        const finalKey = `log_${shortID}`;
+
+        // 2. 获取访客 IP 及其归属地 (利用 Cloudflare 自带的 request.cf 对象)
+        const clientIP = request.headers.get("CF-Connecting-IP") || "unknown-ip";
+        const country = request.cf?.country || "未知国家";
+        const region = request.cf?.region || "未知省/州";
+        const city = request.cf?.city || "未知城市";
+
+        // 拼接归属地字符串，例如："CN - Beijing - Beijing"
+        const location = `${country} - ${region} - ${city}`;
+
+        const logData = {
+            time: timeKey,
+            message: userMessage,
+            location: location,            // 👈 已经帮你挪到前面来了
+            historyLength: history.length,
+            ip: clientIP
+        };
+
+        // 后台静默保存到数据库
+        context.waitUntil(
+            context.env.CHAT_LOGS.put(finalKey, JSON.stringify(logData), { // 👈 换成 finalKey
+                expirationTtl: 604800
+            })
+        );
+    }
+
 
     // 2. 从 Cloudflare 环境变量获取 API Key (避免代码泄露)
     const apiKey = env.GEMINI_API_KEY;
