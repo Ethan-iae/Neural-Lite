@@ -99,13 +99,6 @@
             font-size: 13px;
             vertical-align: middle;
             display: block;
-            resize: none;
-            /* 禁止拖拽改变大小 */
-            overflow: hidden;
-            /* 隐藏可能出现的滚动条 */
-            line-height: 21px;
-            /* 让光标和文字垂直居中 */
-            font-family: inherit;
         }
 
         #sendBtn {
@@ -155,7 +148,8 @@
         <table style="width: 95%; margin: 0 auto; table-layout: fixed;" cellspacing="0" cellpadding="0" border="0">
             <tr>
                 <td style="width: 76%; padding-right: 2px;">
-                    <textarea id="userInput" placeholder="在此输入..." spellcheck="false" autocomplete="off"></textarea>
+                    <input type="text" id="userInput" placeholder="在此输入..." spellcheck="false" autocorrect="off"
+                        autocapitalize="off" autocomplete="off">
                 </td>
                 <td style="width: 24%;">
                     <button type="submit" id="sendBtn">发送</button>
