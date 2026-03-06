@@ -148,7 +148,7 @@
         <table style="width: 95%; margin: 0 auto; table-layout: fixed;" cellspacing="0" cellpadding="0" border="0">
             <tr>
                 <td style="width: 76%; padding-right: 2px;">
-                    <input type="text" id="msg_text" placeholder="在此输入..." spellcheck="false" autocorrect="off"
+                    <input type="text" id="userInput" placeholder="在此输入..." spellcheck="false" autocorrect="off"
                         autocapitalize="off" autocomplete="off">
                 </td>
                 <td style="width: 24%;">
@@ -209,7 +209,7 @@
         // --- 补丁结束 ---
         // 【纯净 ES5 语法】不使用 let/const，不使用箭头函数，不使用 async/await
         var chatBox = document.getElementById('chat');
-        var input = document.getElementById('msg_text');
+        var input = document.getElementById('userInput');
         var btn = document.getElementById('sendBtn');
         var historyLog = [];
 
