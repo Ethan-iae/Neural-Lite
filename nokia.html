@@ -148,8 +148,8 @@
         <table style="width: 95%; margin: 0 auto; table-layout: fixed;" cellspacing="0" cellpadding="0" border="0">
             <tr>
                 <td style="width: 76%; padding-right: 2px;">
-                    <input type="text" id="userInput" name="chat_msg_random" placeholder="在此输入..." spellcheck="false"
-                        autocorrect="off" autocapitalize="off" autocomplete="nope">
+                    <input type="text" id="userInput" placeholder="在此输入..." spellcheck="false" autocorrect="off"
+                        autocapitalize="off" autocomplete="nope" readonly onfocus="this.removeAttribute('readonly');">
                 </td>
                 <td style="width: 24%;">
                     <button type="submit" id="sendBtn">发送</button>
