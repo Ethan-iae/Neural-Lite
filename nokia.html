@@ -230,8 +230,8 @@
             /* --- 优化 3：清理老旧 DOM 节点 --- */
             // 使用 getElementsByTagName 获取真实的 div 节点，而不是包含文本/空格的 childNodes
             var msgDivs = chatBox.getElementsByTagName('div');
-            // 限制在 11 条消息以内
-            if (msgDivs.length > 11) {
+            // 限制在 12 条消息以内
+            if (msgDivs.length > 12) {
                 chatBox.removeChild(msgDivs[0]);
             }
 
