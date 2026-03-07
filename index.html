@@ -11,7 +11,9 @@
     <link rel="icon" type="image/png" href="alien-monster_1f47e.png">
     <link rel="preconnect" href="https://fonts.loli.net">
     <link rel="preconnect" href="https://gstatic.loli.net" crossorigin>
-    <link href="https://fonts.loli.net/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.loli.net/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Sans+TC:wght@400;700&display=swap"
+        rel="stylesheet">
     <style>
         /* =========================================
            引入真实的 Mac OS X 经典英文字体
@@ -55,7 +57,7 @@
             /* 1. 字体栈：我们自定义的真实苹果英文字体放在绝对的第一位！
                英文/数字会被 Classic-Lucida 完美接管。
                遇到中文时，它会自动向后寻找，交给 Noto Sans SC 或系统黑体。 */
-            font-family: 'Classic-Lucida', "Noto Sans SC", "Noto Sans TC","PingFang SC","STHeiti", "华文黑体", sans-serif;
+            font-family: 'Classic-Lucida', "Noto Sans SC", "Noto Sans TC", "PingFang SC", "STHeiti", "华文黑体", sans-serif;
 
             /* 2. 核心渲染调整 */
             -webkit-font-smoothing: antialiased;
@@ -1830,7 +1832,6 @@
             box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6) !important;
             border-color: #000 !important;
         }
-        
     </style>
     <script>
 
@@ -2620,6 +2621,8 @@
                 if (!input.includes("天气") && !input.includes("气温") && !input.includes("多少度")) {
                     return null;
                 }
+
+                // 提取城市名
                 let city = input.replace(/天气|气温|多少度|怎么样|查询|查一下|今天|现在|的|我|想|知道|看看|这里|那里|环境|指数|空气|质量|预报/g, "").trim();
                 if (!city || city.length === 0) city = "北京";
 
@@ -2632,127 +2635,22 @@
                 }, 3000);
 
                 try {
-                    const cleanCity = city.replace(/[市区县]/g, "");
-
-                    // 🛠️ 兼容性更好的超时 fetch 工具
-                    const fetchTimeout = (url, ms) => Promise.race([
-                        fetch(url),
-                        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))
-                    ]);
-
-                    // ==========================================
-                    // 🚀 第一步：极速获取经纬度 (双引擎解析，专治中国小地名)
-                    // ==========================================
-                    let lat = null, lng = null, resolvedCity = city;
-
-                    // 引擎 1：Open-Meteo 官方解析（速度极快，适合大中城市）
-                    // 🌟 修改 1：将 count=1 改为 count=5，多获取几个同名地点
-                    const geoUrl1 = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cleanCity)}&count=5&language=zh&format=json`;
-                    const geoRes1 = await fetchTimeout(geoUrl1, 2000).then(r => r.json()).catch(() => null);
-
-                    if (geoRes1 && geoRes1.results && geoRes1.results.length > 0) {
-                        // 🌟 修改 2：在这几个结果中，对比 population（人口）字段，挑出人口最多的那一个！
-                        const bestMatch = geoRes1.results.reduce((prev, current) => {
-                            return (prev.population || 0) > (current.population || 0) ? prev : current;
-                        });
-
-                        lat = bestMatch.latitude;
-                        lng = bestMatch.longitude;
-                        resolvedCity = bestMatch.name;
-                    } else {
-                        // 引擎 2：OpenStreetMap 兜底解析（地图全，精确到小县城/区镇）
-                        console.log(`Open-Meteo 未找到 "${cleanCity}"，正在启用 OSM 地图引擎兜底...`);
-                        const geoUrl2 = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cleanCity)}&limit=1`;
-                        const geoRes2 = await fetchTimeout(geoUrl2, 3000).then(r => r.json()).catch(() => null);
-
-                        if (geoRes2 && geoRes2.length > 0) {
-                            lat = geoRes2[0].lat;
-                            lng = geoRes2[0].lon;
-                            // 小地方就直接用用户输入的名字，因为 OSM 返回的全称太长了(比如：xx省xx市xx县)
-                            resolvedCity = cleanCity;
-                        } else {
-                            throw new Error("双引擎均无法解析该城市的经纬度");
-                        }
-                    }
-
-                    // ==========================================
-                    // 🚀 第二步：拿着经纬度，三路大军同时出击！
-                    // ==========================================
-                    // 1. Open-Meteo 综合天气 (温度、体感、湿度、风速、气压、天气代码)
-                    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,surface_pressure,wind_speed_10m&timezone=auto`;
-                    // 2. Open-Meteo AQI (备用空气数据)
-                    const omAqiUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lng}&current=us_aqi,pm2_5&timezone=auto`;
-                    // 3. 你的 WAQI (主力空气数据)
-                    const waqiUrl = `/api/waqi?city=${encodeURIComponent(resolvedCity)}`;
-
-                    const [weatherData, waqiData, omAqiData] = await Promise.allSettled([
-                        fetchTimeout(weatherUrl, 4000).then(r => r.json()),
-                        fetchTimeout(waqiUrl, 4000).then(r => r.json()),
-                        fetchTimeout(omAqiUrl, 4000).then(r => r.json())
-                    ]);
-
-                    let report = `🌍 ${resolvedCity}的实时天气\n`;
-
-                    // --- 1. 解析天气数据 ---
-                    if (weatherData.status === 'fulfilled' && weatherData.value?.current) {
-                        const cur = weatherData.value.current;
-
-                        // Open-Meteo 的 WMO 天气代码转中文
-                        const wmoCodes = {
-                            0: "晴朗", 1: "大部晴朗", 2: "局部多云", 3: "阴天",
-                            45: "雾", 48: "结霜雾",
-                            51: "轻微毛毛雨", 53: "中等毛毛雨", 55: "密集毛毛雨",
-                            61: "小雨", 63: "中雨", 65: "大雨",
-                            71: "小雪", 73: "中雪", 75: "大雪",
-                            80: "阵雨", 81: "强阵雨", 82: "暴雨",
-                            95: "雷暴", 96: "雷暴伴有轻微冰雹", 99: "雷暴伴有重冰雹"
-                        };
-                        const weatherText = wmoCodes[cur.weather_code] || "未知";
-
-                        report += `🌤️ 天气：${weatherText}\n`;
-                        report += `🌡️ 温度：${cur.temperature_2m} °C\n`;
-                        report += `🤔 体感：${cur.apparent_temperature} °C\n`;
-                        report += `💧 湿度：${cur.relative_humidity_2m}%\n`;
-                        report += `🌬️ 风速：${cur.wind_speed_10m} km/h\n`;
-                        report += `🎈 气压：${cur.surface_pressure} hPa (地面)\n`;
-                    } else {
-                        report += `🌤️ 天气：获取失败\n`;
-                    }
-
-                    // --- 2. 解析空气质量 (AQI) ---
-                    let aqiSuccess = false;
-
-                    // 策略A: WAQI (地面监测站优先)
-                    if (waqiData.status === 'fulfilled' && waqiData.value?.status === 'ok' && waqiData.value.data?.length > 0) {
-                        for (let i = 0; i < Math.min(waqiData.value.data.length, 5); i++) {
-                            const val = parseInt(waqiData.value.data[i].aqi);
-                            if (!isNaN(val) && waqiData.value.data[i].aqi !== "-") {
-                                let level = val <= 50 ? "🟢(优)" : val <= 100 ? "🟡(良)" : val <= 150 ? "🟠(轻度)" : val <= 200 ? "🔴(中度)" : val <= 300 ? "🟣(重度)" : "☠️(严重)";
-                                report += `🌫️ 空气(AQI)：${val} ${level}\n📡 数据源：地面监测站`;
-                                aqiSuccess = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    // 策略B: Open-Meteo AQI (卫星测算兜底)
-                    if (!aqiSuccess && omAqiData.status === 'fulfilled' && omAqiData.value?.current?.us_aqi !== undefined) {
-                        const aqiVal = omAqiData.value.current.us_aqi;
-                        const pm25 = omAqiData.value.current.pm2_5;
-                        let level = aqiVal <= 50 ? "🟢(优)" : aqiVal <= 100 ? "🟡(良)" : aqiVal <= 150 ? "🟠(轻度)" : aqiVal <= 200 ? "🔴(中度)" : aqiVal <= 300 ? "🟣(重度)" : "☠️(严重)";
-                        report += `🌫️ 空气(AQI)：${aqiVal} ${level}\n😷 PM2.5：${pm25} µg/m³ (卫星估算)`;
-                        aqiSuccess = true;
-                    }
-
-                    if (!aqiSuccess) report += `🌫️ 空气(AQI)：暂无数据`;
+                    // 请求我们刚刚新建的后端聚合接口
+                    const response = await fetch(`/api/weather?city=${encodeURIComponent(city)}`);
+                    const data = await response.json();
 
                     clearTimeout(waitTimer);
-                    return report.trim();
+
+                    if (response.ok && data.report) {
+                        return data.report; // 成功时直接返回拼接好的文本
+                    } else {
+                        return data.error || "天气服务暂时开小差了。";
+                    }
 
                 } catch (e) {
-                    console.error("天气抓取彻底失败:", e);
+                    console.error("前端调用天气接口失败:", e);
                     clearTimeout(waitTimer);
-                    return "气象卫星连接失败，可能是城市名字没认出来，或者网络开小差了。";
+                    return "与气象站通信失败，请检查网络后再试。";
                 }
             }
             // 入口函数
