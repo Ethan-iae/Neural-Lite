@@ -336,8 +336,8 @@ export async function onRequestPost(context) {
     const currentTimeStr = promptTimeFormatter.format(new Date());
     const timePrompt = `【当前系统时间】：${currentTimeStr}。在回答任何涉及时间、日期或时效性的问题时，必须严格以此时间作为“现在”的基准。\n`;
 
-    // 2. 强制拼接 Emoji 规则
-    const systemPrompt = `${customPrompt}【表情符号限制】：你在回复中如果需要使用表情符号（Emoji），只能且必须从以下列表中挑选：${allowedEmojis}。绝对不能使用此列表之外的任何表情符号！`;
+    // 2. 强制拼接：自定义人设 + 时间注入 + Emoji 规则
+    const systemPrompt = `${customPrompt}${timePrompt}【表情符号限制】：你在回复中如果需要使用表情符号（Emoji），只能且必须从以下列表中挑选：${allowedEmojis}。绝对不能使用此列表之外的任何表情符号！`;
 
     // 填入历史聊天记录
     for (const turn of history) {
