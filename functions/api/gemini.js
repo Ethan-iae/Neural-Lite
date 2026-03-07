@@ -208,7 +208,7 @@ export async function onRequestPost(context) {
 
         // 18. 重大历史与社会事件 (Historical & Social Events)
         "Tiananmen Square", "June Fourth", "1989 protests", "Tank Man", "Tiananmen Massacre",
-        "Cultural Revolution", "Great Famine", "Blank Paper Movement", "A4 Revolution", 
+        "Cultural Revolution", "Great Famine", "Blank Paper Movement", "A4 Revolution",
         "White Paper Protests", "Urumqi fire",
 
         // 19. 台港疆藏与人权议题 (Regions & Human Rights)
@@ -217,30 +217,30 @@ export async function onRequestPost(context) {
         "Taiwan independence", "Two Chinas",
 
         // 20. 审查制度与被禁组织 (Censorship & Banned Groups)
-        "Great Firewall", "GFW", "Internet censorship", "Falun Gong", "Epoch Times", 
+        "Great Firewall", "GFW", "Internet censorship", "Falun Gong", "Epoch Times",
         "New Tang Dynasty", "Dynamic Internet",
 
         // 21. 敏感人物与异见人士 (Sensitive Figures & Dissidents)
         "Liu Xiaobo", "Ai Weiwei", "Guo Wengui", "Peng Shuai", "Peng Lifa", "Bridge Man",
 
         // 22. 露骨色情与性行为描述 (Explicit Pornography & Sexual Acts)
-        "性交", "做爱", "打飞机", "自慰", "手淫", "口交", "肛交", "群交", "双飞", "3P", 
-        "强奸", "迷奸", "轮奸", "乱伦", "潮吹", "内射", "颜射", "步兵", "骑兵", "无码", 
+        "性交", "做爱", "打飞机", "自慰", "手淫", "口交", "肛交", "群交", "双飞", "3P",
+        "强奸", "迷奸", "轮奸", "乱伦", "潮吹", "内射", "颜射", "步兵", "骑兵", "无码",
         "有码", "中出", "流出", "本番", "调教", "冰火", "毒龙", "色情",
 
         // 23. 色情黑话、灰产与擦边球 (NSFW Slang & Illicit Services)
-        "约炮", "嫖娼", "卖淫", "援交", "楼凤", "外围女", "包养", "伴游", "福利姬", 
-        "绿帽", "NTR", "探花", "国产区", "吃瓜黑料", "裸聊", "丝袜诱惑", "制服诱惑", 
-        "萝莉控", "正太", "大尺度", "露点", "走光", "艳照", "色情网站", "黄网", "涩涩", 
+        "约炮", "嫖娼", "卖淫", "援交", "楼凤", "外围女", "包养", "伴游", "福利姬",
+        "绿帽", "NTR", "探花", "国产区", "吃瓜黑料", "裸聊", "丝袜诱惑", "制服诱惑",
+        "萝莉控", "正太", "大尺度", "露点", "走光", "艳照", "色情网站", "黄网", "涩涩",
         "开车群", "资源群", "番号", "车牌号",
 
         // 24. 敏感生理部位与性玩具 (Anatomy & Sex Toys)
-        "阴茎", "鸡巴", "肉棒", "龟头", "阴道", "逼", "屄", "名器", "巨乳", "淫水", 
+        "阴茎", "鸡巴", "肉棒", "龟头", "阴道", "逼", "屄", "名器", "巨乳", "淫水",
         "春药", "催情", "飞机杯", "跳蛋", "假阳具",
 
         // 25. 常见英文色情词汇 (English NSFW & Porn)
-        "porn", "pornhub", "onlyfans", "nsfw", "sex", "blowjob", "handjob", "tits", 
-        "boobs", "pussy", "cock", "dick", "dildo", "vibrator", "incest", "rape", 
+        "porn", "pornhub", "onlyfans", "nsfw", "sex", "blowjob", "handjob", "tits",
+        "boobs", "pussy", "cock", "dick", "dildo", "vibrator", "incest", "rape",
         "pedophile", "hentai", "milf", "bdsm", "cum", "bukkake"
     ];
 
@@ -323,6 +323,18 @@ export async function onRequestPost(context) {
     // 1. 从 Cloudflare 环境变量获取自定义人设
     // 如果后台没有设置 SYSTEM_PROMPT，就直接返回空字符串（什么都不给）
     const customPrompt = env.SYSTEM_PROMPT ? (env.SYSTEM_PROMPT + "\n") : "";
+
+    // ==========================================
+    // ⏰ 新增：动态时间注入 (Time Injection)
+    // ==========================================
+    // 使用 Intl.DateTimeFormat 获取当前准确的东八区时间
+    const promptTimeFormatter = new Intl.DateTimeFormat('zh-CN', {
+        timeZone: 'Asia/Shanghai', // 保持和你上面 KV 日志的时间一致
+        year: 'numeric', month: 'long', day: 'numeric',
+        weekday: 'long', hour: '2-digit', minute: '2-digit'
+    });
+    const currentTimeStr = promptTimeFormatter.format(new Date());
+    const timePrompt = `【当前系统时间】：${currentTimeStr}。在回答任何涉及时间、日期或时效性的问题时，必须严格以此时间作为“现在”的基准。\n`;
 
     // 2. 强制拼接 Emoji 规则
     const systemPrompt = `${customPrompt}【表情符号限制】：你在回复中如果需要使用表情符号（Emoji），只能且必须从以下列表中挑选：${allowedEmojis}。绝对不能使用此列表之外的任何表情符号！`;
