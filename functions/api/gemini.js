@@ -396,7 +396,6 @@ export async function onRequestPost(context) {
     // 动态构建请求体
     const requestBody = {
         contents: contents,
-        // 【新增】：降低 Google API 的默认安全拦截阈值
         safetySettings: [
             {
                 category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
@@ -416,9 +415,11 @@ export async function onRequestPost(context) {
             }
         ]
     };
+    
 
-    // 如果当前使用的模型不是 Gemma，就走正规的系统指令通道
+    // 【核心兼容性逻辑】：只有非 Gemma 模型才开启联网搜索和系统指令
     if (!modelName.toLowerCase().includes("gemma")) {
+        requestBody.tools = [{ google_search: {} }];
         requestBody.system_instruction = {
             parts: [{ text: systemPrompt }]
         };
@@ -461,6 +462,14 @@ export async function onRequestPost(context) {
             }
 
             let aiReply = data.candidates[0].content.parts[0].text;
+
+            // 【新增】：检查是否有联网搜索的元数据（来源链接）
+            const groundingMetadata = data.candidates[0].groundingMetadata;
+            if (groundingMetadata && groundingMetadata.searchEntryPoint) {
+                // 你可以选择将搜索来源的 HTML 提示附加在回复后面
+                // searchEntryPoint.html 内容通常是“由 Google 搜索提供”的小挂件
+                aiReply += `\n\n> 🔍 *基于 Google 搜索结果生成*`;
+            }
 
             // ==========================================
             // 🛡️ 第二重护盾：清理非法 Emoji
