@@ -2620,7 +2620,7 @@
             async checkWeather(input) {
                 if (!input.includes("天气") && !input.includes("气温") && !input.includes("多少度")) {
                     return null;
-                }
+                }z
 
                 // 提取城市名
                 let city = input.replace(/天气|气温|多少度|怎么样|查询|查一下|今天|现在|的|我|想|知道|看看|这里|那里|环境|指数|空气|质量|预报/g, "").trim();
@@ -2644,7 +2644,7 @@
                     if (response.ok && data.report) {
                         return data.report; // 成功时直接返回拼接好的文本
                     } else {
-                        return data.error || "天气服务暂时开小差了。";
+                        return data.error + (data.detail ? ` (${data.detail})` : "");
                     }
 
                 } catch (e) {
