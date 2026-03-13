@@ -3,28 +3,26 @@ export async function onRequest(context) {
   const url = new URL(request.url);
 
   // ==============================
-  // 1. 禁用默认 pages.dev 域名
+  // 1. 重定向 pages.dev 到自定义域名
   // ==============================
   if (url.hostname === "neuralite.pages.dev") {
-    // 直接返回 403 拒绝访问（也可以改成 404）
-    return new Response("Access Denied - 禁止通过默认域名访问本站", {
-      status: 403,
-      headers: {
-        "Content-Type": "text/plain; charset=utf-8",
-      },
-    });
+    // 自动跳转到新域名，并保留他们原本想访问的路径（比如 /about）
+    // 注意：把下面的 ai.ekiz.top 换成你实际的自定义域名
+    const newUrl = `http://ai.ekiz.top${url.pathname}${url.search}`;
+    return Response.redirect(newUrl, 301); // 301 代表永久重定向
   }
 
-  // ==============================
-  // 2. 封禁指定 IP 逻辑 (你之前的代码)
-  // ==============================
-  const clientIP = request.headers.get("CF-Connecting-IP");
   
+  // ==============================
+  // 0. 封禁指定 IP 逻辑
+  // ==============================
+  // 获取客户端真实 IP
+  const clientIP = request.headers.get("CF-Connecting-IP");
   
   // 在这里填入你想封禁的 IP 地址列表
   const blockedIPs = [
-    "0.0.0.0",  // 示例 IP 1
-       // 示例 IP 2
+    "123.45.67.89",  // 示例 IP 1
+    "98.76.54.32"    // 示例 IP 2
   ];
 
   // 如果访客 IP 在黑名单中，直接返回 403 拒绝访问
