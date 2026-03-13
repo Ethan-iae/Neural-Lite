@@ -1,17 +1,5 @@
 export async function onRequest(context) {
   const { request } = context;
-  const url = new URL(request.url);
-
-  // ==============================
-  // 1. 重定向 pages.dev 到自定义域名
-  // ==============================
-  if (url.hostname === "neuralite.pages.dev") {
-    // 自动跳转到新域名，并保留他们原本想访问的路径（比如 /about）
-    // 注意：把下面的 ai.ekiz.top 换成你实际的自定义域名
-    const newUrl = `http://ai.ekiz.top${url.pathname}${url.search}`;
-    return Response.redirect(newUrl, 301); // 301 代表永久重定向
-  }
-
   
   // ==============================
   // 0. 封禁指定 IP 逻辑
@@ -21,7 +9,7 @@ export async function onRequest(context) {
   
   // 在这里填入你想封禁的 IP 地址列表
   const blockedIPs = [
-    "123.45.67.89",  // 示例 IP 1
+    "117.133.190.183",  // 示例 IP 1
     "98.76.54.32"    // 示例 IP 2
   ];
 
