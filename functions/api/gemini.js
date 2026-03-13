@@ -334,7 +334,7 @@ export async function onRequestPost(context) {
         weekday: 'long', hour: '2-digit', minute: '2-digit'
     });
     const currentTimeStr = promptTimeFormatter.format(new Date());
-    const timePrompt = `(系统隐藏上下文：当前时间是 ${currentTimeStr}。规则：除非用户明确询问时间、日期或星期几，否则你**绝对不能**在回复中主动提及、复述或暗示当前时间！把时间当作你的内部怀表，不要念出来。)\n`;
+    const timePrompt = `【当前系统时间】：${currentTimeStr}。在回答涉及时间、日期的问题时，以此时间作为“现在”的基准。\n`;
 
     // 2. 强制拼接：自定义人设 + 时间注入 + Emoji 规则
     const systemPrompt = `${customPrompt}${timePrompt}【表情符号限制】：你在回复中如果需要使用表情符号（Emoji），只能且必须从以下列表中挑选：${allowedEmojis}。绝对不能使用此列表之外的任何表情符号！`;
