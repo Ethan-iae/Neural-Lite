@@ -1,30 +1,6 @@
 export async function onRequest(context) {
   const { request } = context;
   
-  // ==============================
-  // 0. 封禁指定 IP 逻辑
-  // ==============================
-  // 获取客户端真实 IP
-  const clientIP = request.headers.get("CF-Connecting-IP");
-  
-  // 在这里填入你想封禁的 IP 地址列表
-  const blockedIPs = [
-    "117.133.190.183",  // 示例 IP 1
-    "66.90.98.146"    // 示例 IP 2
-  ];
-
-  // 如果访客 IP 在黑名单中，直接返回 403 拒绝访问
-  if (blockedIPs.includes(clientIP)) {
-    return new Response("Access Denied - 您的 IP 已被封禁", {
-      status: 403,
-      headers: {
-        "Content-Type": "text/plain; charset=utf-8",
-      },
-    });
-  }
-  // ==============================
-
-
   const USERNAME = "a";
   const PASSWORD = "a"; 
   const COOKIE_NAME = "nokia_pass";
