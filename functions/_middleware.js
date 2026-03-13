@@ -1,6 +1,44 @@
 export async function onRequest(context) {
   const { request } = context;
+  const url = new URL(request.url);
+
+  // ==============================
+  // 1. 禁用默认 pages.dev 域名
+  // ==============================
+  if (url.hostname === "neuralite.pages.dev") {
+    // 直接返回 403 拒绝访问（也可以改成 404）
+    return new Response("Access Denied - 禁止通过默认域名访问本站", {
+      status: 403,
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+      },
+    });
+  }
+
+  // ==============================
+  // 2. 封禁指定 IP 逻辑 (你之前的代码)
+  // ==============================
+  const clientIP = request.headers.get("CF-Connecting-IP");
   
+  
+  // 在这里填入你想封禁的 IP 地址列表
+  const blockedIPs = [
+    "0.0.0.0",  // 示例 IP 1
+       // 示例 IP 2
+  ];
+
+  // 如果访客 IP 在黑名单中，直接返回 403 拒绝访问
+  if (blockedIPs.includes(clientIP)) {
+    return new Response("Access Denied - 您的 IP 已被封禁", {
+      status: 403,
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+      },
+    });
+  }
+  // ==============================
+
+
   const USERNAME = "a";
   const PASSWORD = "a"; 
   const COOKIE_NAME = "nokia_pass";
