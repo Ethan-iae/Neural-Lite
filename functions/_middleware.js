@@ -10,7 +10,7 @@ export async function onRequest(context) {
   // 在这里填入你想封禁的 IP 地址列表
   const blockedIPs = [
     "117.133.190.183",  // 示例 IP 1
-    "98.76.54.32"    // 示例 IP 2
+    "66.90.98.146"    // 示例 IP 2
   ];
 
   // 如果访客 IP 在黑名单中，直接返回 403 拒绝访问
