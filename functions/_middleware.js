@@ -1,6 +1,21 @@
 export async function onRequest(context) {
   const { request } = context;
+  const url = new URL(request.url);
+
+  // === 新增逻辑：基于“暗号”拦截 pages.dev 直接访问 ===
+  const proxySecret = request.headers.get("X-Proxy-Secret");
   
+  // 如果访问的是默认域名，且没有携带我们在 Worker 中设置的暗号
+  if (url.hostname.endsWith(".pages.dev") && proxySecret !== "ekiz-secret-888") {
+    // 强烈建议使用 301 重定向，把乱跑的用户引回你的正规域名
+    return Response.redirect(`https://ai.ekiz.top${url.pathname}${url.search}`, 301);
+    
+    // (如果你不想跳转，只想报错，可以取消下面这行的注释并删掉上面的 return)
+    // return new Response("Forbidden - 请通过官方域名 ai.ekiz.top 访问", { status: 403, headers: { "Content-Type": "text/plain; charset=utf-8" } });
+  }
+  // =================================================
+
+  // 下面是你原本的密码验证逻辑，保持不变
   const USERNAME = "a";
   const PASSWORD = "a"; 
   const COOKIE_NAME = "nokia_pass";
@@ -30,12 +45,10 @@ export async function onRequest(context) {
   const response = await context.next();
   const newResponse = new Response(response.body, response);
   
-  // 计算出 10 年后的具体时间，转为老浏览器能懂的 UTC 格式
   const expiresDate = new Date();
   expiresDate.setFullYear(expiresDate.getFullYear() + 10);
   const expiresString = expiresDate.toUTCString();
   
-  // 双管齐下：同时加入 Max-Age 和 Expires
   newResponse.headers.append(
     "Set-Cookie", 
     `${COOKIE_NAME}=${COOKIE_VALUE}; Path=/; Max-Age=315360000; Expires=${expiresString}; HttpOnly; Secure`
