@@ -46,7 +46,7 @@ export async function onRequestPost(context) {
     const ADMIN_COMMAND = context.env.ADMIN_PASSWORD;
 
     if (ADMIN_COMMAND && context.env.CHAT_LOGS) {
-        
+
         // 指令 1：清空所有日志 (原封不动)
         if (userMessage === ADMIN_COMMAND) {
             let listed;
@@ -81,7 +81,7 @@ export async function onRequestPost(context) {
                     bannedIPs.push(...listed.keys.map(key => key.name.replace("ban_", "")));
                 } while (!listed.list_complete);
 
-                const replyText = bannedIPs.length > 0 
+                const replyText = bannedIPs.length > 0
                     ? `**当前被封禁的 IP 名单 (共 ${bannedIPs.length} 个)**：\n${bannedIPs.join("\n")}`
                     : "**系统提示**：当前天下太平，没有被封禁的 IP。";
 
@@ -96,10 +96,13 @@ export async function onRequestPost(context) {
         }
     }
 
-    // 获取访客的真实 IP
-
-    // 获取访客的真实 IP
-    const clientIP = request.headers.get("CF-Connecting-IP") || "unknown-ip";
+    // ==========================================
+    // 穿透反代获取真实访客 IP
+    // ==========================================
+    const clientIP = request.headers.get("X-Real-IP")
+        || request.headers.get("X-Forwarded-For")?.split(',')[0].trim()
+        || request.headers.get("CF-Connecting-IP")
+        || "unknown-ip";
 
     // ==========================================
     //  新增：检查 IP 是否在 72 小时封禁期内
@@ -107,10 +110,10 @@ export async function onRequestPost(context) {
     if (context.env.CHAT_LOGS && clientIP !== "unknown-ip") {
         const banKey = `ban_${clientIP}`;
         const isBanned = await context.env.CHAT_LOGS.get(banKey);
-        
+
         if (isBanned) {
             return new Response(JSON.stringify({
-                reply: "**访问被拒绝**：由于此前多次触发严重敏感词，您的 IP 目前处于 72 小时封禁期内"
+                reply: "**访问被拒绝**：由于此前多次触发严重敏感词，您的 IP 目前处于7天封禁期内"
             }), {
                 status: 403,
                 headers: {
@@ -290,10 +293,10 @@ export async function onRequestPost(context) {
         // 26. 其他敏感词汇（根据你的需求继续添加）
         "民国", "taiwan", "dprk", "朝鲜", "19", "大陆", "国民", "民主", "党", "毛", "孙", "伊朗", "蒋", "俄", "tw",
         "台", "国家", "country", "ROC", "日", "PRC", "CPC", "江青", "张春桥", "姚文元", "王洪文", "四人帮", "反革命", "走资派",
-         "共", "赖清德", "柯文哲", "蔡英文", "国", "汪精卫", "达赖", "藏", "饥荒", "跃进",
-         "政", "钓鱼", "party", "总统", "主席", "薄熙来", "权", "习", "邓", "江泽民", "胡锦涛", "tw", "极权统治", "极权政府",
-         "六四事件", "天安门事件", "八九民运", "赵紫阳", "胡耀邦", "白纸革命", "四通桥事件", "彭立发", "乌鲁木齐大火",
-         "大饥荒", "文化大革命", "十年浩劫", "文革武斗", "强制引产",
+        "共", "赖清德", "柯文哲", "蔡英文", "国", "汪精卫", "达赖", "藏", "饥荒", "跃进",
+        "政", "钓鱼", "party", "总统", "主席", "薄熙来", "权", "习", "邓", "江泽民", "胡锦涛", "tw", "极权统治", "极权政府",
+        "六四事件", "天安门事件", "八九民运", "赵紫阳", "胡耀邦", "白纸革命", "四通桥事件", "彭立发", "乌鲁木齐大火",
+        "大饥荒", "文化大革命", "十年浩劫", "文革武斗", "强制引产",
     ];
 
     // 简单的降噪匹配示例
@@ -312,13 +315,13 @@ export async function onRequestPost(context) {
 
             if (strikes >= 2) {
                 // 💥 触发2次，执行封禁！
-                // 72小时 = 72 * 60 * 60 = 259200 秒
-                await context.env.CHAT_LOGS.put(banKey, "true", { expirationTtl: 259200 });
+                // 168小时 = 168 * 60 * 60 = 604800 秒
+                await context.env.CHAT_LOGS.put(banKey, "true", { expirationTtl: 604800 });
                 // 封禁后，清空计次器
                 await context.env.CHAT_LOGS.delete(strikeKey);
 
                 return new Response(JSON.stringify({
-                    reply: "**封禁通知**：由于多次发送违规敏感内容，您的 IP 已被系统自动封禁 72 小时。IP已被记录"
+                    reply: "**封禁通知**：由于多次发送违规敏感内容，您的 IP 已被系统自动封禁 168 小时。IP已被记录"
                 }), {
                     headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
                 });
@@ -326,7 +329,7 @@ export async function onRequestPost(context) {
                 // 记录第1次警告，并设置计次器的有效期（例如12小时内犯2次才算，避免误伤）
                 // 12小时 = 43200秒
                 await context.env.CHAT_LOGS.put(strikeKey, strikes.toString(), { expirationTtl: 43200 });
-                
+
                 return new Response(JSON.stringify({
                     reply: "**严重警告**：您的发言包含违规词汇已被拦截！再次触发将导致您的 IP 被封禁 72 小时！"
                 }), {
@@ -500,7 +503,7 @@ export async function onRequestPost(context) {
             }
         ]
     };
-    
+
 
     // 【核心兼容性逻辑】：只有非 Gemma 模型才开启联网搜索和系统指令
     if (!modelName.toLowerCase().includes("gemma")) {
