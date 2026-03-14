@@ -593,3 +593,4 @@ export async function onRequestOptions() {
         }
     });
 }
+//密码是zYH317799   输入密码后加空格和指令bans查看封禁，直接输入密码清空kv数据库
