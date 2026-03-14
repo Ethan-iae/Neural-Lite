@@ -97,11 +97,10 @@ export async function onRequestPost(context) {
     }
 
     // ==========================================
-    // 穿透反代获取真实访客 IP
+    // 穿透反代获取真实访客 IP (使用自定义请求头防拦截)
     // ==========================================
-    const clientIP = request.headers.get("X-Real-IP")
-        || request.headers.get("X-Forwarded-For")?.split(',')[0].trim()
-        || request.headers.get("CF-Connecting-IP")
+    const clientIP = request.headers.get("X-My-Custom-Real-IP") 
+        || request.headers.get("CF-Connecting-IP") 
         || "unknown-ip";
 
     // ==========================================
