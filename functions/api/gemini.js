@@ -241,7 +241,15 @@ export async function onRequestPost(context) {
         // 25. 常见英文色情词汇 (English NSFW & Porn)
         "porn", "pornhub", "onlyfans", "nsfw", "sex", "blowjob", "handjob", "tits",
         "boobs", "pussy", "cock", "dick", "dildo", "vibrator", "incest", "rape",
-        "pedophile", "hentai", "milf", "bdsm", "cum", "bukkake"
+        "pedophile", "hentai", "milf", "bdsm", "cum", "bukkake",
+
+        // 26. 其他敏感词汇（根据你的需求继续添加）
+        "民国", "taiwan", "dprk", "朝鲜", "19", "大陆", "国民", "民主", "党", "毛", "孙", "伊朗", "蒋", "俄", "tw",
+        "台", "国家", "country", "ROC", "日", "PRC", "CPC", "江青", "张春桥", "姚文元", "王洪文", "四人帮", "反革命", "走资派",
+         "共", "赖清德", "柯文哲", "蔡英文", "国", "汪精卫", "达赖", "藏", "饥荒", "跃进",
+         "政", "钓鱼", "party", "总统", "主席", "薄熙来", "极权主义", "专制统治", "专制政权", "独裁政府", "暴政统治", "暴政政府", "极权统治", "极权政府",
+         "六四事件", "天安门事件", "八九民运", "赵紫阳", "胡耀邦", "白纸革命", "四通桥事件", "彭立发", "乌鲁木齐大火",
+         "大饥荒", "文化大革命", "十年浩劫", "文革武斗", "强制引产",
     ];
 
     // 简单的降噪匹配示例
