@@ -41,41 +41,85 @@ export async function onRequestPost(context) {
     }
 
     // ==========================================
-    // 🧹 新增：管理员一键清理 KV 日志的“超级密码”
+    // 🧹 新增：管理员一键指令 (清理日志 & 查看封禁)
     // ==========================================
-    const ADMIN_CLEAR_COMMAND = context.env.ADMIN_PASSWORD;
+    const ADMIN_COMMAND = context.env.ADMIN_PASSWORD;
 
-    // 👈 修复 2：去掉了重复嵌套的 if，并且在这里就干净利落结束了这个判断
-    if (ADMIN_CLEAR_COMMAND && userMessage === ADMIN_CLEAR_COMMAND && context.env.CHAT_LOGS) {
-        let listed;
-        let deletedCount = 0;
+    if (ADMIN_COMMAND && context.env.CHAT_LOGS) {
+        
+        // 指令 1：清空所有日志 (原封不动)
+        if (userMessage === ADMIN_COMMAND) {
+            let listed;
+            let deletedCount = 0;
+            try {
+                do {
+                    listed = await context.env.CHAT_LOGS.list({ prefix: "log_" });
+                    const deletePromises = listed.keys.map(key => context.env.CHAT_LOGS.delete(key.name));
+                    await Promise.all(deletePromises);
+                    deletedCount += listed.keys.length;
+                } while (!listed.list_complete);
 
-        try {
-            do {
-                listed = await context.env.CHAT_LOGS.list({ prefix: "log_" });
-                const deletePromises = listed.keys.map(key => context.env.CHAT_LOGS.delete(key.name));
-                await Promise.all(deletePromises);
-                deletedCount += listed.keys.length;
-            } while (!listed.list_complete);
-
-            return new Response(JSON.stringify({
-                reply: `**系统提示**：清理完毕！共清空了 ${deletedCount} 条对话记录。你的 KV 数据库现在干干净净了。`
-            }), {
-                headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
-            });
-        } catch (error) {
-            return new Response(JSON.stringify({
-                reply: `❌ **清理失败**：操作 KV 数据库时发生错误 (${error.message})。`
-            }), {
-                headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
-            });
+                return new Response(JSON.stringify({ reply: `**系统提示**：共清空了 ${deletedCount} 条对话记录。` }), {
+                    headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+                });
+            } catch (error) {
+                return new Response(JSON.stringify({ reply: `**清理失败**：${error.message}` }), {
+                    headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+                });
+            }
         }
-    } // 👈 注意这个括号，它让清理代码到此为止，不影响下面的聊天逻辑
+
+        // 指令 2：查看当前被封禁的 IP 名单 (在你的密码后面加个空格和 bans)
+        if (userMessage === `${ADMIN_COMMAND} bans`) {
+            let listed;
+            let bannedIPs = [];
+            try {
+                do {
+                    // 检索所有以 ban_ 开头的 Key
+                    listed = await context.env.CHAT_LOGS.list({ prefix: "ban_" });
+                    // 把 "ban_192.168.1.1" 变成 "192.168.1.1"
+                    bannedIPs.push(...listed.keys.map(key => key.name.replace("ban_", "")));
+                } while (!listed.list_complete);
+
+                const replyText = bannedIPs.length > 0 
+                    ? `**当前被封禁的 IP 名单 (共 ${bannedIPs.length} 个)**：\n${bannedIPs.join("\n")}`
+                    : "**系统提示**：当前天下太平，没有被封禁的 IP。";
+
+                return new Response(JSON.stringify({ reply: replyText }), {
+                    headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+                });
+            } catch (error) {
+                return new Response(JSON.stringify({ reply: `**获取失败**：${error.message}` }), {
+                    headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+                });
+            }
+        }
+    }
 
     // 获取访客的真实 IP
 
     // 获取访客的真实 IP
     const clientIP = request.headers.get("CF-Connecting-IP") || "unknown-ip";
+
+    // ==========================================
+    //  新增：检查 IP 是否在 72 小时封禁期内
+    // ==========================================
+    if (context.env.CHAT_LOGS && clientIP !== "unknown-ip") {
+        const banKey = `ban_${clientIP}`;
+        const isBanned = await context.env.CHAT_LOGS.get(banKey);
+        
+        if (isBanned) {
+            return new Response(JSON.stringify({
+                reply: "**访问被拒绝**：由于此前多次触发严重敏感词，您的 IP 目前处于 72 小时封禁期内"
+            }), {
+                status: 403,
+                headers: {
+                    "Content-Type": "application/json",
+                    "Access-Control-Allow-Origin": "*"
+                }
+            });
+        }
+    }
 
     //  IP 黑名单拦截
     const blockedIPsString = env.BLOCKED_IPS || "";
@@ -257,11 +301,45 @@ export async function onRequestPost(context) {
     const isSensitive = sensitiveWords.some(word => cleanMessage.includes(word.toLowerCase()));
 
     if (isSensitive) {
-        // 触发敏感词，直接返回兜底回复，终止程序，绝对不请求 Google
+        // 如果触发了敏感词，并且能获取到 IP
+        if (context.env.CHAT_LOGS && clientIP !== "unknown-ip") {
+            const strikeKey = `strike_${clientIP}`; // 违规计次 Key
+            const banKey = `ban_${clientIP}`;       // 封禁状态 Key
+
+            // 1. 获取该 IP 之前的违规次数
+            let strikes = await context.env.CHAT_LOGS.get(strikeKey);
+            strikes = strikes ? parseInt(strikes) + 1 : 1;
+
+            if (strikes >= 2) {
+                // 💥 触发2次，执行封禁！
+                // 72小时 = 72 * 60 * 60 = 259200 秒
+                await context.env.CHAT_LOGS.put(banKey, "true", { expirationTtl: 259200 });
+                // 封禁后，清空计次器
+                await context.env.CHAT_LOGS.delete(strikeKey);
+
+                return new Response(JSON.stringify({
+                    reply: "**封禁通知**：由于多次发送违规敏感内容，您的 IP 已被系统自动封禁 72 小时。IP已被记录"
+                }), {
+                    headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+                });
+            } else {
+                // 记录第1次警告，并设置计次器的有效期（例如12小时内犯2次才算，避免误伤）
+                // 12小时 = 43200秒
+                await context.env.CHAT_LOGS.put(strikeKey, strikes.toString(), { expirationTtl: 43200 });
+                
+                return new Response(JSON.stringify({
+                    reply: "**严重警告**：您的发言包含违规词汇已被拦截！再次触发将导致您的 IP 被封禁 72 小时！"
+                }), {
+                    headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+                });
+            }
+        }
+
+        // 兜底回复（以防 KV 未配置或没有 IP）
         return new Response(JSON.stringify({
             reply: "抱歉，由于我的系统安全设定，我无法讨论这个话题哦。我们聊点别的吧！"
         }), {
-            headers: { "Content-Type": "application/json" }
+            headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
         });
     }
 
@@ -290,8 +368,7 @@ export async function onRequestPost(context) {
         // 最终 Key 格式：log_k1p4z5r2
         const finalKey = `log_${shortID}`;
 
-        // 2. 获取访客 IP 及其归属地 (利用 Cloudflare 自带的 request.cf 对象)
-        const clientIP = request.headers.get("CF-Connecting-IP") || "unknown-ip";
+        // 2. 获取访客归属地 (IP 前面已经获取过了，这里直接用)
         const country = request.cf?.country || "未知国家";
         const region = request.cf?.region || "未知省/州";
         const city = request.cf?.city || "未知城市";
