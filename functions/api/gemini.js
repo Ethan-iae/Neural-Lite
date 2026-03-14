@@ -330,7 +330,7 @@ export async function onRequestPost(context) {
                 await context.env.CHAT_LOGS.put(strikeKey, strikes.toString(), { expirationTtl: 43200 });
 
                 return new Response(JSON.stringify({
-                    reply: "**严重警告**：您的发言包含违规词汇已被拦截！再次触发将导致您的 IP 被封禁 72 小时！"
+                    reply: "**严重警告**：您的发言包含违规词汇已被拦截！再次触发将导致您的 IP 被封禁 168 小时！"
                 }), {
                     headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
                 });
