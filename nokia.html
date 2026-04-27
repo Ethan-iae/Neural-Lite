@@ -1,0 +1,344 @@
+<!DOCTYPE html PUBLIC "-//WAPFORUM//DTD XHTML Mobile 1.0//EN" "http://www.wapforum.org/DTD/xhtml-mobile10.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Neural-Lite</title>
+    <style type="text/css">
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff;
+            color: #000000;
+            font-family: sans-serif;
+            font-size: 13px;
+        }
+
+        h2 {
+            font-size: 14px;
+            margin: 0;
+            padding: 2px 6px;
+            border-bottom: 2px solid #000;
+            background-color: #f5f5f5;
+            line-height: 18px;
+        }
+
+        #chat {
+            padding: 6px;
+        }
+
+        .msg {
+            margin-bottom: 4px;
+            border-bottom: 1px dashed #cccccc;
+            padding: 0 0 4px 0;
+            font-size: 12px;
+            line-height: 1.3;
+            word-wrap: break-word;
+        }
+
+        .user-msg {
+            color: #000;
+            font-weight: bold;
+        }
+
+        .ai-msg {
+            color: #333;
+        }
+
+        .input-area {
+            padding: 6px;
+            background-color: #f5f5f5;
+            border-bottom: 2px solid #000;
+        }
+
+        #userInput {
+            width: 100%;
+            height: 27px;
+            padding: 2px 5px;
+            font-size: 13px;
+            border: 1px solid #000;
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+            vertical-align: middle;
+        }
+
+        #sendBtn {
+            width: 100%;
+            height: 27px;
+            border: 1px solid #000;
+            background-color: #dddddd;
+            color: #000;
+            font-weight: bold;
+            font-size: 13px;
+            cursor: pointer;
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+            vertical-align: middle;
+        }
+
+        body.dark-mode {
+            background-color: #000;
+            color: #aaa;
+        }
+
+        body.dark-mode h2 {
+            background-color: #111;
+            border-bottom: 2px solid #555;
+            color: #ddd;
+        }
+
+        body.dark-mode .input-area {
+            background-color: #111;
+            border-bottom: 2px solid #555;
+        }
+
+        body.dark-mode .msg {
+            border-bottom: 1px dashed #333;
+        }
+
+        body.dark-mode .user-msg {
+            color: #ddd;
+        }
+
+        body.dark-mode .ai-msg {
+            color: #888;
+        }
+
+        body.dark-mode #userInput {
+            background-color: #222;
+            color: #fff;
+            border: 1px solid #555;
+        }
+
+        body.dark-mode #sendBtn {
+            background-color: #333;
+            color: #ddd;
+            border: 1px solid #555;
+        }
+
+        .nav-links {
+            float: right;
+            font-size: 12px;
+            font-weight: normal;
+        }
+
+        .nav-links a {
+            color: blue;
+            text-decoration: none;
+            margin-left: 8px;
+        }
+
+        body.dark-mode .nav-links a {
+            color: #55aaff;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>
+        <span class="nav-links">
+
+            <a href="javascript:toggleTheme();" id="themeBtn">[夜间]</a>
+        </span>
+        Neural-Lite 终端
+    </h2>
+
+    <div class="input-area">
+        <form action="/api/chat" method="POST" onsubmit="sendMessage(); return false;">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                    <td width="75%" valign="middle" align="center" style="padding-right: 2px;">
+                        <input type="text" id="userInput" name="message" placeholder="在此输入..." autocomplete="off" />
+                    </td>
+                    <td width="25%" valign="middle" align="center">
+                        <input type="button" id="sendBtn" value="发送" onclick="sendMessage()" />
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+
+    <div id="chat">
+        <div class="msg ai-msg"><b>AI:</b><br />连接就绪。请输入你的指令</div>
+    </div>
+
+    <a name="bottom" id="bottom"></a>
+
+    <script type="text/javascript">
+        function getCookie(name) {
+            var arr, reg = new RegExp("(^| )" + name + "=([^;]*)(;|$)");
+            if (arr = document.cookie.match(reg)) return decodeURIComponent(arr[2]);
+            else return "";
+        }
+        function toggleTheme() {
+            var bodyObj = document.body;
+            var btn = document.getElementById('themeBtn');
+            var isDark = bodyObj.className.indexOf('dark-mode') !== -1;
+
+            var d = new Date();
+            d.setTime(d.getTime() + (365 * 24 * 60 * 60 * 1000));
+            var expires = "expires=" + d.toUTCString();
+
+            if (isDark) {
+                bodyObj.className = bodyObj.className.replace('dark-mode', '').replace(/^\s+|\s+$/g, '');
+                document.cookie = "neural_theme=light; path=/; " + expires;
+                btn.innerHTML = '[夜间]';
+            } else {
+                bodyObj.className += (bodyObj.className ? ' ' : '') + 'dark-mode';
+                document.cookie = "neural_theme=dark; path=/; " + expires;
+                btn.innerHTML = '[日间]';
+            }
+        }
+        var savedTheme = getCookie('neural_theme');
+        if (savedTheme === 'dark') {
+            document.body.className += ' dark-mode';
+            document.getElementById('themeBtn').innerHTML = '[日间]';
+        }
+
+        /* Polyfills */
+        if (typeof XMLHttpRequest === "undefined") {
+            window.XMLHttpRequest = function () {
+                try { return new ActiveXObject("Msxml2.XMLHTTP.6.0"); } catch (e) { }
+                try { return new ActiveXObject("Msxml2.XMLHTTP.3.0"); } catch (e) { }
+                try { return new ActiveXObject("Microsoft.XMLHTTP"); } catch (e) { }
+                throw new Error("此浏览器不支持 AJAX");
+            };
+        }
+        if (!window.JSON) {
+            window.JSON = {
+                parse: function (sJSON) {
+                    try {
+                        if (/^[\],:{}\s]*$/.test(sJSON.replace(/\\["\\\/bfnrtu]/g, '@').
+                            replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, ']').
+                            replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
+                            return eval('(' + sJSON + ')');
+                        }
+                    } catch (e) { }
+                    return null;
+                },
+                stringify: function (v) {
+                    var i, s = "", len;
+                    if (v === null) return "null";
+                    if (typeof v === 'number' || typeof v === 'boolean') return v.toString();
+                    if (typeof v === 'string') return '"' + v.replace(/"/g, '\\"') + '"';
+                    if (v instanceof Array) {
+                        len = v.length;
+                        for (i = 0; i < len; i++) s += (s ? "," : "") + this.stringify(v[i]);
+                        return "[" + s + "]";
+                    }
+                    if (typeof v === 'object') {
+                        for (i in v) {
+                            if (v.hasOwnProperty(i)) s += (s ? "," : "") + '"' + i + '":' + this.stringify(v[i]);
+                        }
+                        return "{" + s + "}";
+                    }
+                    return "";
+                }
+            };
+        }
+
+        var chatBox = document.getElementById('chat');
+        var input = document.getElementById('userInput');
+        var btn = document.getElementById('sendBtn');
+        var historyLog = [];
+
+        function scrollToBottom() {
+            window.scrollTo(0, document.body.scrollHeight || document.documentElement.scrollHeight);
+        }
+
+        function escapeHTML(text) {
+            var div = document.createElement('div');
+            div.appendChild(document.createTextNode(text));
+            return div.innerHTML;
+        }
+
+        function addMessage(sender, text, isAi) {
+            var div = document.createElement('div');
+            div.className = 'msg ' + (isAi ? 'ai-msg' : 'user-msg');
+
+            var safeText = text;
+            try { safeText = escapeHTML(text); } catch (e) { }
+
+            div.innerHTML = '<b>' + sender + ':</b><br />' + safeText.replace(/\n/g, '<br />');
+
+            if (chatBox.firstChild) {
+                chatBox.insertBefore(div, chatBox.firstChild);
+            } else {
+                chatBox.appendChild(div);
+            }
+
+            var msgDivs = chatBox.getElementsByTagName('div');
+            if (msgDivs.length > 30) {
+                chatBox.removeChild(msgDivs[msgDivs.length - 1]);
+            }
+
+            window.scrollTo(0, 0);
+        }
+
+        function sendMessage() {
+            var text = input.value;
+            if (text === null || text === '') return;
+
+            input.value = '';
+            btn.disabled = true;
+            btn.innerHTML = '发送中';
+            addMessage('我', text, false);
+
+            var thinkingId = 'thinking-' + new Date().getTime();
+            var thinkingTimeout = setTimeout(function() {
+                var div = document.createElement('div');
+                div.id = thinkingId;
+                div.className = 'msg ai-msg';
+                div.innerHTML = '<b>AI:</b><br /><i>正在思考中...</i>';
+                if (chatBox.firstChild) {
+                    chatBox.insertBefore(div, chatBox.firstChild);
+                } else {
+                    chatBox.appendChild(div);
+                }
+            }, 5000);
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/api/gemini?t=' + new Date().getTime(), true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    clearTimeout(thinkingTimeout);
+                    var thinkingDiv = document.getElementById(thinkingId);
+                    if (thinkingDiv) {
+                        thinkingDiv.parentNode.removeChild(thinkingDiv);
+                    }
+                    
+                    btn.disabled = false;
+                    btn.innerHTML = '发送';
+                    if (xhr.status === 200) {
+                        try {
+                            var res = JSON.parse(xhr.responseText);
+                            if (res === null) throw new Error("Parse failed");
+                            var reply = res.reply ? res.reply : '无返回内容';
+                            addMessage('AI', reply, true);
+                            historyLog.push({ q: text, a: reply });
+                            if (historyLog.length > 20) historyLog.shift();
+                        } catch (e) {
+                            addMessage('系统', '解析数据失败', true);
+                        }
+                    } else {
+                        addMessage('系统', '网络请求失败，状态码: ' + xhr.status, true);
+                    }
+                }
+            };
+
+            var requestData = JSON.stringify({
+                message: text,
+                history: historyLog,
+                client: 'nokia'
+            });
+            xhr.send(requestData);
+        }
+    </script>
+
+</body>
+
+</html>
