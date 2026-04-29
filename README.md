@@ -18,10 +18,12 @@
 │   ├── api/            # 接口实现 (聊天、天气、词库等)
 │   └── _middleware.js  # 中间件配置
 ├── Vocabulary/         # 敏感词过滤库 (txt 格式)
+├── alien-monster_1f47e.png # 网站图标
+├── app.js              # 主界面前端逻辑
+├── build-vocabulary.js # 词库构建处理脚本
 ├── index.html          # 主界面入口
 ├── nokia.html          # 诺基亚风格备用界面
 ├── persona.txt         # AI 系统提示词设定
-├── build-vocabulary.js # 词库构建处理脚本
 ├── words.json          # 构建后的词典数据
 └── README.md           # 项目说明文档
 ```
