@@ -500,13 +500,7 @@ export async function onRequestPost(context) {
       }
 
       let parts = data.candidates[0].content.parts;
-      // 如果模型区分了 thought part，我们直接过滤掉它
-      let textParts = parts.filter(p => !p.thought).map(p => p.text);
-      let aiReply = textParts.length > 0 ? textParts.join('\n') : parts.map(p => p.text).join('\n');
-
-      // 针对模型（如 Gemma）不区分 part 而是直接输出带有星号的思考过程，使用正则剥离掉开头的思考列表
-      aiReply = aiReply.replace(/^(?:(?:\s*\*(?:\s*User says|\s*Context|\s*Role|\s*Personality|\s*Word limit|\s*Sensitive topics|\s*Confidentiality|\s*Time reference|\s*Emoji restriction|\s*Keep it|\s*Use allowed|\s*".*"|\s*Check)[^\n]*)\n+)+/i, '').trim();
-      aiReply = aiReply.replace(/^(?:\s*\*\s+[^\n]*\n)+/, '').trim(); // 进一步清理可能仅在文本开头出现的其他星号思考行
+      let aiReply = parts.map(p => p.text).join('\n');
 
       // 【新增】：检查是否有联网搜索的元数据（来源链接）
       const groundingMetadata = data.candidates[0].groundingMetadata;
