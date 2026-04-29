@@ -500,7 +500,7 @@ export async function onRequestPost(context) {
       }
 
       let parts = data.candidates[0].content.parts;
-      let aiReply = parts.map(p => p.text).join('\n');
+      let aiReply = parts.map(p => p.text).join('\n').trim();
 
       // 【新增】：检查是否有联网搜索的元数据（来源链接）
       const groundingMetadata = data.candidates[0].groundingMetadata;
