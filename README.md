@@ -32,7 +32,6 @@
 ├── build-vocabulary.js # 词库构建处理脚本
 ├── index.html          # 主界面入口
 ├── nokia.html          # 诺基亚风格备用界面
-├── persona.txt         # AI 系统提示词设定
 ├── style.css           # 网站全局样式表
 ├── words.json          # 构建后的词典数据
 └── README.md           # 项目说明文档
