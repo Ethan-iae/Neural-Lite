@@ -13,9 +13,16 @@
 ## 项目结构
 
 ```text
-├── assets/             # 静态资源 (复古表情、自定义字体)
+├── assets/             # 静态资源
+│   ├── emojis/         # 复古表情图标
+│   └── fonts/          # 自定义字体
 ├── functions/          # Cloudflare Pages Functions (后端逻辑)
-│   ├── api/            # 接口实现 (聊天、天气、词库等)
+│   ├── api/            # API 接口实现
+│   │   ├── chat.js     # 聊天会话处理
+│   │   ├── gemini.js   # Gemini AI 核心调用
+│   │   ├── vocabulary.js # 词库过滤校验
+│   │   ├── waqi.js     # 空气质量查询
+│   │   └── weather.js  # 实时天气查询
 │   └── _middleware.js  # 中间件配置
 ├── Vocabulary/         # 敏感词过滤库 (txt 格式)
 ├── alien-monster_1f47e.png # 网站图标
@@ -24,6 +31,7 @@
 ├── index.html          # 主界面入口
 ├── nokia.html          # 诺基亚风格备用界面
 ├── persona.txt         # AI 系统提示词设定
+├── style.css           # 网站全局样式表
 ├── words.json          # 构建后的词典数据
 └── README.md           # 项目说明文档
 ```
