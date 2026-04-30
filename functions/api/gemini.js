@@ -510,6 +510,12 @@ export async function onRequestPost(context) {
         aiReply += `\n\n> *基于 Google 搜索结果生成*`;
       }
 
+      // 处理 AI 返回的 LaTeX 公式箭头字符
+      aiReply = aiReply.replace(/\$\\rightarrow\$/g, "→")
+                       .replace(/\\rightarrow/g, "→")
+                       .replace(/\$\\to\$/g, "→")
+                       .replace(/\\to/g, "→");
+
       // ==========================================
       // 🛡️ 第二重护盾：清理非法 Emoji
       // ==========================================
