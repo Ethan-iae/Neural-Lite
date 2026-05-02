@@ -236,29 +236,6 @@ const SOUND_URLS = {
                 }
                 this.history.push({ q: userInput, a: aiResponse });
             }
-            async fetchGeminiDirectly(text) {
-                try {
-                    const response = await fetch('/api/gemini', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            message: text,
-                            history: this.history
-                        })
-                    });
-                    const data = await response.json();
-                    if (data.reply) {
-                        const reply = data.reply.trim();
-                        this.saveContext(text, reply);
-                        return reply;
-                    } else {
-                        throw new Error(data.error || "模型返回内容为空");
-                    }
-                } catch (e) {
-                    console.error("直接请求失败:", e);
-                    throw e;
-                }
-            }
             async process(input) {
                 if (!input) return null;
                 let text = input.trim();
@@ -283,13 +260,6 @@ const SOUND_URLS = {
                         console.error("解析JSON失败:", e);
                         throw new Error("服务器返回了非JSON数据，状态码: " + response.status);
                     }
-
-                    // IF server-side sub-request failed (403/500), try direct client-side call
-                    if (data.error === "Internal Sub-request Error") {
-                        console.warn("服务端转发失败，尝试客户端直接连接...");
-                        return await this.fetchGeminiDirectly(text);
-                    }
-
                     if (data.memory) {
                         this.memory = data.memory;
                         this.saveMemory();
@@ -307,14 +277,10 @@ const SOUND_URLS = {
                         throw new Error("模型返回异常，缺少回复内容");
                     }
                 } catch (e) {
-                    console.error("优先请求失败，尝试降级连接:", e);
-                    try {
-                        return await this.fetchGeminiDirectly(text);
-                    } catch (fallbackErr) {
-                        finalResponse = "我的云端神经元似乎断线了... (" + fallbackErr.message + ")";
-                        this.saveContext(text, finalResponse);
-                        return finalResponse;
-                    }
+                    console.error("请求失败:", e);
+                    finalResponse = "我的云端神经元似乎断线了... (" + e.message + ")";
+                    this.saveContext(text, finalResponse);
+                    return finalResponse;
                 }
             }
         }

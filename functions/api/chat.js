@@ -1,3 +1,5 @@
+import { processGeminiRequest, handleOptions } from "../lib/gemini-core.js";
+
 export async function onRequestPost(context) {
     const { request, env } = context;
     let body;
@@ -50,7 +52,6 @@ export async function onRequestPost(context) {
                 
                 // --- 1:1 Restore WAQI logic (avoiding internal fetch) ---
                 const waqiToken = env.WAQI_API_KEY;
-                // Try searching by coordinates first (most accurate), then by Chinese city name
                 const waqiGeoUrl = `https://api.waqi.info/feed/geo:${lat};${lng}/?token=${waqiToken}`;
                 const waqiSearchUrl = `https://api.waqi.info/search/?token=${waqiToken}&keyword=${encodeURIComponent(cleanCity)}`;
 
@@ -88,11 +89,9 @@ export async function onRequestPost(context) {
                 
                 // --- 1:1 Restore original waqi.js search logic ---
                 if (waqiSearchRes.status === 'fulfilled' && waqiSearchRes.value?.status === 'ok' && waqiSearchRes.value.data?.length > 0) {
-                    // Original waqi.js logic: loop through search results to find a valid AQI
                     for (let i = 0; i < Math.min(waqiSearchRes.value.data.length, 5); i++) {
                         const stationData = waqiSearchRes.value.data[i];
                         const val = parseInt(stationData.aqi);
-                        // Filter out empty or invalid AQI values
                         if (!isNaN(val) && stationData.aqi !== "-" && stationData.aqi !== "") {
                             let level = val <= 50 ? "🟢(优)" : val <= 100 ? "🟡(良)" : val <= 150 ? "🟠(轻度)" : val <= 200 ? "🔴(中度)" : val <= 300 ? "🟣(重度)" : "☠️(严重)";
                             report += `🌫️ 空气(AQI)：${val} ${level}\n📡 数据源：地面监测站`;
@@ -133,60 +132,37 @@ export async function onRequestPost(context) {
     }
     // ------------------------------------------------------------
 
-    // Call Gemini Endpoint natively via loopback fetch
-    const origin = new URL(request.url).origin;
+    // --- 直接调用 Gemini 核心逻辑（不再使用 loopback HTTP 子请求）---
+    const clientIP = request.headers.get('CF-Connecting-IP') || 'unknown-ip';
+
+    const geminiResponse = await processGeminiRequest({
+        userMessage: (message || "").substring(0, 2000),
+        history: history || [],
+        clientIP,
+        clientType: body.client || '',
+        env,
+        context,
+        cfData: request.cf || {},
+        geoHeaders: {
+            country: request.headers.get("X-Real-Country"),
+            region: request.headers.get("X-Real-Region"),
+            city: request.headers.get("X-Real-City"),
+        },
+    });
+
+    // 将 memory 附加到响应中
     try {
-        const visitorIP = request.headers.get('CF-Connecting-IP') || request.headers.get('X-My-Custom-Real-IP') || '';
-        const userAgent = request.headers.get('User-Agent') || 'Neural-Lite-Internal';
-        
-        const geminiRes = await fetch(`${origin}/api/gemini?t=${Date.now()}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-My-Custom-Real-IP': visitorIP,
-                'User-Agent': userAgent
-            },
-            body: JSON.stringify({ message, history }),
-            redirect: 'follow'
+        const geminiData = await geminiResponse.clone().json();
+        return new Response(JSON.stringify({ ...geminiData, memory: memory }), {
+            status: geminiResponse.status,
+            headers: { 'Content-Type': 'application/json' },
         });
-        
-        const responseText = await geminiRes.text();
-        
-        if (!geminiRes.ok) {
-            throw new Error(`Gemini sub-request failed with status ${geminiRes.status}: ${responseText.substring(0, 100)}`);
-        }
-
-        try {
-            const data = JSON.parse(responseText);
-            // Pass the response through but append memory
-            return new Response(JSON.stringify({ ...data, memory: memory }), {
-                status: geminiRes.status,
-                headers: { 'Content-Type': 'application/json' }
-            });
-        } catch (jsonErr) {
-            throw new Error(`Failed to parse Gemini response as JSON. Content starts with: ${responseText.substring(0, 50)}`);
-        }
-
     } catch (e) {
-        console.error("Gemini 请求失败:", e);
-        const fallback = "我的云端神经元似乎断线了... 稍后再试吧。";
-        return new Response(JSON.stringify({ 
-            reply: fallback, 
-            memory: memory, 
-            error: "Internal Sub-request Error",
-            details: e.message 
-        }), {
-            headers: { 'Content-Type': 'application/json' }
-        });
+        // 如果响应不是 JSON（不太可能），直接返回
+        return geminiResponse;
     }
 }
 
 export async function onRequestOptions() {
-  return new Response(null, {
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-    },
-  });
+    return handleOptions();
 }
