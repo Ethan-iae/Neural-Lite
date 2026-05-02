@@ -14,7 +14,7 @@
   - 严格的 Content Security Policy (CSP)，仅允许白名单域名资源加载，禁用 `eval`。
   - 所有请求强制通过后端统一入口，前端不可绕过安全检查。
 - **后台管控**：
-  - **访问控制**：支持通过 `PROXY_SECRET` 限制直接访问，支持 `BLOCKED_IPS` 封禁特定恶意 IP，并可一键开启 `MAINTENANCE_MODE` 维护模式。
+  - **访问控制**：支持 `BLOCKED_IPS` 封禁特定恶意 IP，并可一键开启 `MAINTENANCE_MODE` 维护模式。
   - **日志与管理**：结合 Cloudflare KV (`CHAT_LOGS`)，实现对话日志记录、滥用自动封禁机制，并支持在对话框中通过 `ADMIN_PASSWORD` 执行后台清理与解封等特殊指令。
 
 ## 📂 项目结构
@@ -106,7 +106,6 @@
 |--------|------|
 | `WAQI_API_KEY` | WAQI API Token（空气质量查询） |
 | `CANONICAL_DOMAIN` | 你的正式域名，不带 `https://`（如 `ai.ekiz.top`），用于中间件重定向 |
-| `PROXY_SECRET` | 保护 Pages.dev 域名的访问密钥 |
 | `MAINTENANCE_MODE` | 设为 `"true"` 开启维护模式 |
 | `ADMIN_PASSWORD` | 管理员密码，用于对话框中执行特殊管理命令 |
 | `BLOCKED_IPS` | 封禁的 IP 列表（逗号分隔） |
