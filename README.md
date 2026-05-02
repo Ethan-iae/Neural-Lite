@@ -142,6 +142,6 @@
 3. 运行 `node build-vocabulary.js` 生成最新的词典文件。
 4. 运行 `wrangler pages dev .` 启动本地测试服务器。
 
-## 📄 许可证 (License)
+## 许可证 (License)
 
 本项目基于 [MIT](LICENSE) 协议开源。
