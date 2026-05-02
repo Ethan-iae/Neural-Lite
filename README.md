@@ -4,7 +4,7 @@
 
 一个基于 Cloudflare Pages 部署的复古风格 AI 聊天界面，集成了 Google Gemini 模型，实时工具与后台管控。
 
-## 项目特性
+## ✨ 项目特性
 
 - **拟物设计**：采用 Lucida Grande 字体与经典的 UI 元素，重现早期操作系统的视觉体验（提供默认界面及诺基亚风格备用界面）。
 - ** AI 驱动**：集成 Google Gemini API，支持自定义模型（`GEMINI_MODEL`）与系统提示词（`SYSTEM_PROMPT`），提供个性化的对话体验。
@@ -17,7 +17,7 @@
   - **访问控制**：支持通过 `PROXY_SECRET` 限制直接访问，支持 `BLOCKED_IPS` 封禁特定恶意 IP，并可一键开启 `MAINTENANCE_MODE` 维护模式。
   - **日志与管理**：结合 Cloudflare KV (`CHAT_LOGS`)，实现对话日志记录、滥用自动封禁机制，并支持在对话框中通过 `ADMIN_PASSWORD` 执行后台清理与解封等特殊指令。
 
-## 项目结构
+## 📂 项目结构
 
 ```text
 ├── assets/               # 静态资源
@@ -64,7 +64,7 @@
                                     └─ Emoji 过滤 + 后处理 → 返回
 ```
 
-## 快速部署
+## 🚀 快速部署
 
 本项目设计为直接部署在 **Cloudflare Pages**，由于包含后端 API（位于 `functions` 目录），请遵循以下详细步骤进行配置和部署：
 
