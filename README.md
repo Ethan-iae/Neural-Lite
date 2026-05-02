@@ -1,5 +1,7 @@
 # Neural-Lite
 
+![Cloudflare Pages](https://img.shields.io/badge/Cloudflare-Pages-F38020?logo=cloudflare&logoColor=white) ![Gemini API](https://img.shields.io/badge/Google-Gemini_API-4285F4?logo=google&logoColor=white) ![JavaScript](https://img.shields.io/badge/JavaScript-Vanilla-F7DF1E?logo=javascript&logoColor=black)
+
 一个基于 Cloudflare Pages 部署的复古风格 AI 聊天界面，集成了 Google Gemini 模型，实时工具与后台管控。
 
 ## 项目特性
@@ -140,6 +142,6 @@
 3. 运行 `node build-vocabulary.js` 生成最新的词典文件。
 4. 运行 `wrangler pages dev .` 启动本地测试服务器。
 
-## 开源说明
+## 📄 许可证 (License)
 
-本项目仅供学习与交流使用。
+本项目基于 [MIT](LICENSE) 协议开源。
